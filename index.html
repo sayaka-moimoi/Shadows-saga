@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shadows Saga - Official Web Reader</title>
+  <style>
+    :root {
+      --bg-color: #0d0d11;
+      --text-color: #dcdcdc;
+      --accent-red: #c92a2a;
+      --accent-gold: #d4af37;
+      --panel-bg: #16161e;
+      --border-color: #2a2a38;
+      --font-family: "Hiragino Mincho ProN", "Yu Mincho", "游明朝", "Noto Serif JP", serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      line-height: 2;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* 固定ヘッダー */
+    header {
+      position: sticky;
+      top: 0;
+      background: rgba(13, 13, 17, 0.98);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .brand-title {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: var(--accent-gold);
+      letter-spacing: 2px;
+      font-family: sans-serif;
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-icon {
+      background: none;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+
+    /* メインエリア */
+    main {
+      flex: 1;
+      max-width: 760px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px 20px 100px;
+    }
+
+    /* 章ヘッダー */
+    .chapter-header {
+      text-align: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .volume-tag {
+      font-size: 0.8rem;
+      color: var(--accent-red);
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .chapter-title {
+      font-size: 1.5rem;
+      color: #fff;
+      margin: 8px 0 10px;
+      letter-spacing: 1px;
+    }
+
+    /* 専用オーディオプレイヤーカード */
+    .audio-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-red);
+      border-radius: 6px;
+      padding: 14px 18px;
+      margin-bottom: 25px;
+      font-family: sans-serif;
+    }
+
+    .audio-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .audio-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .audio-badge {
+      background: var(--accent-red);
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+
+    .audio-song-name {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: var(--accent-gold);
+    }
+
+    audio {
+      width: 100%;
+      height: 38px;
+      outline: none;
+      filter: invert(0.9) hue-rotate(180deg); /* プレイヤーをダーク調にする */
+    }
+
+    /* 表示切り替えタブ（小説 / 歌詞） */
+    .view-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+      font-family: sans-serif;
+    }
+
+    .tab-btn {
+      flex: 1;
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      color: #888;
+      padding: 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: bold;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+    }
+
+    .tab-btn.active {
+      background: #222230;
+      color: var(--accent-gold);
+      border-color: var(--accent-gold);
+    }
+
+    /* 本文表示 */
+    .view-content {
+      display: none;
+    }
+
+    .view-content.active {
+      display: block;
+    }
+
+    /* 小説本文 */
+    .novel-body {
+      font-size: 1.05rem;
+      letter-spacing: 0.05em;
+    }
+
+    .novel-body p {
+      margin-bottom: 1.8em;
+      text-indent: 1em;
+    }
+
+    .novel-body p.quote {
+      text-indent: 0;
+      color: #fff;
+      font-weight: bold;
+      border-left: 2px solid var(--accent-gold);
+      padding-left: 12px;
+      margin: 1.5em 0;
+    }
+
+    /* 歌詞カード表示 */
+    .lyrics-body {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 25px;
+      font-size: 1rem;
+      line-height: 2.2;
+      white-space: pre-wrap;
+      color: #ccc;
+      text-align: center; /* 歌詞カード風に中央揃え */
+    }
+
+    /* サイドバー・目次 */
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -320px;
+      width: 320px;
+      height: 100vh;
+      background: #121218;
+      box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+      transition: right 0.3s ease;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar.open { right: 0; }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--accent-gold);
+      font-family: sans-serif;
+    }
+
+    .toc-list {
+      flex: 1;
+      overflow-y: auto;
+      list-style: none;
+      padding: 10px 0;
+      font-family: sans-serif;
+    }
+
+    .toc-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+      transition: background 0.2s;
+    }
+
+    .toc-item:hover, .toc-item.active {
+      background: var(--panel-bg);
+      color: var(--accent-gold);
+      border-left: 3px solid var(--accent-gold);
+    }
+
+    .toc-vol-label {
+      font-size: 0.75rem;
+      color: var(--accent-red);
+      font-weight: bold;
+      padding: 15px 20px 5px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      z-index: 150;
+    }
+
+    .overlay.open { display: block; }
+
+    /* 下部ナビゲーション */
+    .footer-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(13, 13, 17, 0.95);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 20px;
+      backdrop-filter: blur(8px);
+      z-index: 90;
+    }
+
+    .nav-btn {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px 24px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: sans-serif;
+      transition: all 0.2s;
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: var(--accent-red);
+      border-color: var(--accent-red);
+    }
+
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-title">SHADOWS SAGA</div>
+    <div class="header-controls">
+      <button class="btn-icon" onclick="toggleFontSize()">文字: <span id="font-size-label">中</span></button>
+      <button class="btn-icon" onclick="toggleSidebar()">目次 ☰</button>
+    </div>
+  </header>
+
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>目次</h3>
+      <button class="btn-icon" onclick="toggleSidebar()">✕</button>
+    </div>
+    <ul class="toc-list" id="toc-list"></ul>
+  </aside>
+
+  <main>
+    <div class="chapter-header">
+      <div class="volume-tag" id="vol-tag">VOL.1</div>
+      <h1 class="chapter-title" id="chapter-title">章タイトル</h1>
+    </div>
+
+    <!-- 常設オーディオプレイヤー：曲を流したまま小説も歌詞も読める！ -->
+    <div class="audio-card">
+      <div class="audio-info">
+        <div class="audio-title-wrap">
+          <span class="audio-badge">BGM</span>
+          <span class="audio-song-name" id="song-name">曲名</span>
+        </div>
+      </div>
+      <!-- ここでmp3ファイルを直接再生！ -->
+      <audio id="audio-player" controls preload="metadata" src=""></audio>
+    </div>
+
+    <!-- 小説と歌詞の表示切り替えタブ -->
+    <div class="view-tabs">
+      <button class="tab-btn active" id="tab-novel" onclick="switchView('novel')">📖 小説本文</button>
+      <button class="tab-btn" id="tab-lyrics" onclick="switchView('lyrics')">📜 歌詞カード</button>
+    </div>
+
+    <!-- 小説本文エリア -->
+    <article class="view-content active novel-body" id="novel-content"></article>
+
+    <!-- 歌詞カードエリア -->
+    <div class="view-content lyrics-body" id="lyrics-content"></div>
+  </main>
+
+  <div class="footer-nav">
+    <button class="nav-btn" id="prev-btn" onclick="prevChapter()">← 前の章</button>
+    <button class="nav-btn" id="next-btn" onclick="nextChapter()">次の章 →</button>
+  </div>
+
+  <script>
+    // ===== チャプターデータ（mp3のファイル名を music/フォルダ に合わせるだけ！） =====
+    const chapters = [
+      {
+        vol: "第1巻：Dawn Beyond Shadows",
+        title: "10# 蛍丸",
+        songTitle: "影の円舞曲",
+        mp3File: "https://files.catbox.moe/phvkwp.mp3", // あなたの手元のmp3ファイル名
+        lyrics: `闇の帳 揺れる灯
+影に溶けたこの身を
+無心で振るう 刃の先
+迷いを斬れるか
+
+冷えた刃 鈍く光り
+空を裂いて 音が鳴る
+ただそれだけ ただそれだけ
+なのに胸が疼く
+
+斬れぬものが ひとつだけ
+胸の奥に刺さるまま
+影に溶けた この心
+なおも光を追う
+
+焔の舞う 遠き日よ
+忘れたはずの温もり
+刃の軌跡 指でなぞり
+影が囁く
+
+剣の舞 影に溶け
+ただの器になればいい
+そう思うたび 揺らめくのは
+この手が知る 熱
+
+刀を納める 静寂
+鞘に消える余韻の音
+問うことすら 赦されぬ
+影は揺れながら`,
+        content: `
+          <p>暗黒の城の一室。燭台の揺れる光だけが、漆黒の空間にわずかな明かりを灯していた。</p>
+          <p>サヤメタは静かに佇んでいた。目の前には、一振りの長刀——蛍丸。かつてマークメタルが振るっていた刀であり、今は彼の手を離れ、サヤメタのものとなっていた。</p>
+          <p>彼女はゆっくりとその柄に手を伸ばし、鞘から抜き放つ。刃が闇の中で鈍く光り、わずかに冷たい音を立てた。</p>
+          <p>何も考えず、無心で刀を振るう。型は、正確。力は、無駄なく研ぎ澄まされている。それは戦士としての長年の鍛錬が、身体に染みついている証だった。</p>
+          <p class="quote">（——なぜだ？）</p>
+          <p>サヤメタの中に、かすかな違和感が生まれる。いつも通りの鍛錬のはずだった。ただ、刀を振り、技を研ぎ澄ませばいい。それなのに——心が、妙にざわつく。</p>
+          <p class="quote">（——考えるな。感じろ。）</p>
+          <p>意識を振り払うように、もう一度大きく刀を振るった。そして、ふっと息を吐き、蛍丸をゆっくりと鞘に納める。</p>
+          <p class="quote">—— キーン ——</p>
+          <p>鞘に収まる音が、やけに静かに響いた。サヤメタは刀を持つ手を見つめる。その指には、無意識に力がこもっていた。</p>
+          <p>しばらくののち、サヤメタは蛍丸を部屋の隅に立てかけた。しばらくそれを見つめ、やがて、静かに立ち上がる。</p>
+          <p>「——出てくる。」</p>
+          <p>そして、サヤメタは静かに影の城を後にした——。</p>
+        `
+      },
+      {
+        vol: "第2巻：Shadows of Rebellion",
+        title: "1# 再生",
+        songTitle: "Re:birth",
+        mp3File: "music/03_rebirth.mp3",
+        lyrics: `静寂の中 目を開けた 
+光と闇の 記憶が揺れる 
+手のひらに落ちていた 折り紙の欠片 
+触れた瞬間 闇がざわめく
+
+まだ終わりじゃない ここからだろう 
+影を超えて 走り抜ける 
+鋼の鼓動とともに進め 
+新しい旅が 始まる
+
+黒鉄の記憶をそっとなぞれば 蘇るあの日々の声 
+森の中で交わした言葉 気づけば涙が零れてた 
+古びたバイクに跨がれば エンジンの音が背中を押す 
+あの頃見上げた大きな背中 今なら届く気がした
+
+まだ終わりじゃない ここからだろう 
+迷いを捨てて 走り抜ける 
+鋼の鼓動と ともに進め 
+新しい旅が始まる さあ行こう`,
+        content: `
+          <p>柔らかな朝日が二人を包み、世界に新たな一日を告げていた。黄金色の光が差し込み、静かな風が戦場の名残を吹き抜ける。</p>
+          <p>二人が立ち去ったあと。彼女が昇華したその場所に、光が静かに集まり始めた。かつて無数に存在した影折の破片が光を帯び、それらは一点へと収束する。柔らかな輝きが、瓦礫の中に形を成していった。</p>
+          <p>――静寂の中、サヤメタはゆっくりと目を開けた。</p>
+          <p>その時、目の端に赤と黒の布が巻かれた長刀が映った。そっとそれに触れる。それが彼女のものだと気づいた瞬間、記憶が呼び覚まされる。</p>
+          <p>森の中の特訓。交わした言葉。カニの一件。響き合う歌声。かけがえのない日々。気づけばまた、涙が零れ落ちていた。</p>
+          <p>「……私は、まだ…」</p>
+          <p>蛍丸とシュシュを手に取る。かつての自分と向き合ったこの経験を胸に、未来への一歩を踏み出す。</p>
+          <p>傍らにあった古びたバイク―ルマンドXが遺した鋼鉄騎士団号に跨る。アクセルを軽くひねる。低く、唸る音が響いた。</p>
+          <p>「……行こう。」</p>
+          <p>影ではなく、光の道を走り抜けるために。旅の始まりを告げるように、遠くの雲がゆっくりと流れていく。</p>
+        `
+      }
+    ];
+
+    let currentIndex = 0;
+    const fontSizes = ["0.95rem", "1.05rem", "1.2rem"];
+    const fontSizeLabels = ["小", "中", "大"];
+    let currentFontSizeIdx = 1;
+
+    function init() {
+      renderToc();
+      loadChapter(0);
+    }
+
+    function renderToc() {
+      const tocList = document.getElementById("toc-list");
+      tocList.innerHTML = "";
+      let currentVol = "";
+
+      chapters.forEach((ch, idx) => {
+        if (ch.vol !== currentVol) {
+          currentVol = ch.vol;
+          const volLabel = document.createElement("li");
+          volLabel.className = "toc-vol-label";
+          volLabel.innerText = currentVol;
+          tocList.appendChild(volLabel);
+        }
+
+        const li = document.createElement("li");
+        li.className = "toc-item" + (idx === currentIndex ? " active" : "");
+        li.innerText = ch.title;
+        li.onclick = () => {
+          loadChapter(idx);
+          toggleSidebar();
+        };
+        tocList.appendChild(li);
+      });
+    }
+
+    function loadChapter(index) {
+      currentIndex = index;
+      const ch = chapters[index];
+
+      document.getElementById("vol-tag").innerText = ch.vol;
+      document.getElementById("chapter-title").innerText = ch.title;
+      document.getElementById("song-name").innerText = ch.songTitle;
+      
+      // オーディオ設定（曲をロード）
+      const player = document.getElementById("audio-player");
+      player.src = ch.mp3File;
+
+      document.getElementById("novel-content").innerHTML = ch.content;
+      document.getElementById("lyrics-content").innerText = ch.lyrics;
+
+      // 小説タブをデフォルトで開く
+      switchView('novel');
+
+      document.getElementById("prev-btn").disabled = (currentIndex === 0);
+      document.getElementById("next-btn").disabled = (currentIndex === chapters.length - 1);
+
+      renderToc();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // 小説 / 歌詞の切り替え
+    function switchView(viewType) {
+      const tabNovel = document.getElementById("tab-novel");
+      const tabLyrics = document.getElementById("tab-lyrics");
+      const novelContent = document.getElementById("novel-content");
+      const lyricsContent = document.getElementById("lyrics-content");
+
+      if (viewType === 'novel') {
+        tabNovel.classList.add("active");
+        tabLyrics.classList.remove("active");
+        novelContent.classList.add("active");
+        lyricsContent.classList.remove("active");
+      } else {
+        tabNovel.classList.remove("active");
+        tabLyrics.classList.add("active");
+        novelContent.classList.remove("active");
+        lyricsContent.classList.add("active");
+      }
+    }
+
+    function prevChapter() { if (currentIndex > 0) loadChapter(currentIndex - 1); }
+    function nextChapter() { if (currentIndex < chapters.length - 1) loadChapter(currentIndex + 1); }
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("open");
+      document.getElementById("overlay").classList.toggle("open");
+    }
+
+    function toggleFontSize() {
+      currentFontSizeIdx = (currentFontSizeIdx + 1) % fontSizes.length;
+      document.getElementById("novel-content").style.fontSize = fontSizes[currentFontSizeIdx];
+      document.getElementById("font-size-label").innerText = fontSizeLabels[currentFontSizeIdx];
+    }
+
+    init();
+  </script>
+</body>
+</html>
