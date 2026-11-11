@@ -29,8 +29,13 @@ This is our destiny！`,
       <hr style="border:0; border-top: 1px solid var(--border-color); margin: 25px 0;">
       <p class="no-indent" style="font-weight: bold; color: var(--accent-gold);">【第1巻 章一覧】</p>
       <p class="no-indent" style="font-size: 0.95rem; line-height: 2;">
-        1# 黎明　/　2# 交戦　/　3# 脅威　/　4# 紅白　/　5# 策略<br>
-        6# 闇堕　/　7# 喪失　/　8# 残滓　/　9# 奮起　/　10# 蛍丸<br>
+        1# 黎明<br>
+        2# 交戦<br>
+        3# 脅威<br>
+        4# 紅白<br>
+        5# 策略<br>
+        6# 闇堕<br>
+        7# 喪失　/　8# 残滓　/　9# 奮起　/　10# 蛍丸<br>
         11# 遭遇　/　12# 歌声　/　13# 絶叫　/　14# 舞踏　/　15# 折紙<br>
         16# 共鳴　/　17# 対峙　/　18# 響鋼　/　19# 記憶　/　20# 業火<br>
         21# 世界　/　22# 決起　/　23# 武闘　/　24# 決着　/　25# 再会<br>
