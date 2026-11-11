@@ -47,6 +47,7 @@
       color: var(--accent-gold);
       letter-spacing: 2px;
       font-family: sans-serif;
+      cursor: pointer;
     }
 
     .header-controls {
@@ -152,7 +153,7 @@
       font-style: italic;
     }
 
-    /* タブ切り替え */
+    /* 切り替えタブ */
     .view-tabs {
       display: flex;
       gap: 10px;
@@ -208,6 +209,7 @@
       border-left: 3px solid var(--accent-red);
       font-size: 0.9rem;
       color: #bbb;
+      text-indent: 0;
     }
 
     .lyrics-body {
@@ -220,6 +222,43 @@
       white-space: pre-wrap;
       color: #ccc;
       text-align: center;
+    }
+
+    /* トップページ用グリッドリスト */
+    .portal-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+      margin-top: 20px;
+      font-family: sans-serif;
+    }
+
+    .portal-card {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      padding: 12px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .portal-card:hover {
+      border-color: var(--accent-gold);
+      background: #1e1e2a;
+    }
+
+    .portal-card-title {
+      font-size: 0.95rem;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .portal-card-sub {
+      font-size: 0.8rem;
+      color: var(--accent-red);
     }
 
     /* サイドバー */
@@ -321,7 +360,7 @@
 <body>
 
   <header>
-    <div class="brand-title">DAWN BEYOND SHADOWS</div>
+    <div class="brand-title" onclick="loadChapter(0)">DAWN BEYOND SHADOWS</div>
     <div class="header-controls">
       <button class="btn-icon" onclick="toggleFontSize()">文字: <span id="font-size-label">中</span></button>
       <button class="btn-icon" onclick="toggleSidebar()">目次 ☰</button>
@@ -355,14 +394,14 @@
       <audio id="audio-player" controls preload="metadata" src=""></audio>
     </div>
 
-    <!-- タブ切り替え -->
+    <!-- タブ切り替え（トップ時は「小説目次 / アルバム」、各章では「小説本文 / 歌詞カード」に自動変化！） -->
     <div class="view-tabs">
-      <button class="tab-btn active" id="tab-novel" onclick="switchView('novel')">📖 小説本文</button>
-      <button class="tab-btn" id="tab-lyrics" onclick="switchView('lyrics')">📜 歌詞カード</button>
+      <button class="tab-btn active" id="tab-left" onclick="switchView('left')">📖 小説目次</button>
+      <button class="tab-btn" id="tab-right" onclick="switchView('right')">💿 アルバム</button>
     </div>
 
-    <article class="view-content active novel-body" id="novel-content"></article>
-    <div class="view-content lyrics-body" id="lyrics-content"></div>
+    <article class="view-content active novel-body" id="left-content"></article>
+    <div class="view-content lyrics-body" id="right-content"></div>
   </main>
 
   <div class="footer-nav">
@@ -374,23 +413,12 @@
     // ===== 第一巻 全データ格納 =====
     const chapters = [
       {
-        title: "目次・プロローグ",
+        title: "第一巻 目次・プロローグ",
         songTitle: "Dawn Beyond Shadows (OP#)",
         mp3File: "",
-        lyrics: `灰の中から目覚め 鎖を断ち切れ
-炎の中で 運命を刻む
-闇の彼方から 呼ぶ声が
-導くんだ Dawn Beyond Shadows
-
-もう恐れない 痛みさえも
-嵐を超えて We rise again
-
-Dawn beyond shadows, 燃え上がれ
-闇を裂き 未来を掴め
-声を上げて 信じる限り
-This is our destiny！`,
+        lyrics: `灰の中から目覚め 鎖を断ち切れ\n炎の中で 運命を刻む\n闇の彼方から 呼ぶ声が\n導くんだ Dawn Beyond Shadows\n\nもう恐れない 痛みさえも\n嵐を超えて We rise again\n\nDawn beyond shadows, 燃え上がれ\n闇を裂き 未来を掴め\n声を上げて 信じる限り\nThis is our destiny！`,
         content: `
-          <p class="no-indent" style="text-align: center; color: var(--accent-gold); font-weight: bold; margin-bottom: 2em;">
+          <p class="no-indent" style="text-align: center; color: var(--accent-gold); font-weight: bold; margin-bottom: 2em; font-size: 1.1rem;">
             抗い続ける者たちへ…<br>
             …光を信じ、闇を裂け！<br>
             闇の彼方に暁は訪れる<br>
@@ -398,38 +426,16 @@ This is our destiny！`,
             Dawn Beyond Shadows<br>
             ～暁の彼方へ～
           </p>
-          <hr style="border:0; border-top: 1px solid var(--border-color); margin: 30px 0;">
-          <p class="no-indent"><strong>【もくじ】</strong></p>
-          <p class="no-indent" style="line-height: 2.2; font-family: sans-serif; font-size: 0.95rem;">
-            1# 黎明　/　2# 交戦　/　3# 脅威　/　4# 紅白　/　5# 策略<br>
-            6# 闇堕　/　7# 喪失　/　8# 残滓　/　9# 奮起　/　10# 蛍丸<br>
-            11# 遭遇　/　12# 歌声　/　13# 絶叫　/　14# 舞踏　/　15# 折紙<br>
-            16# 共鳴　/　17# 対峙　/　18# 響鋼　/　19# 記憶　/　20# 業火<br>
-            21# 世界　/　22# 決起　/　23# 武闘　/　24# 決着　/　25# 再会<br>
-            26# 影折　/　27# 舞闘　/　28# 音撃　/　29# 光折　/　30# 昇華<br>
-            31# 由結　/　32# 暁光<br>
-            Bonus1：あとがき・推薦・妄想新刊・映画化妄想<br>
-            Bonus2：まとめ
-          </p>
-          <p style="margin-top: 30px;">下の「次の章 →」ボタン、または右上の「目次 ☰」から各章へお進みください。</p>
+          <hr style="border:0; border-top: 1px solid var(--border-color); margin: 25px 0;">
+          <p class="no-indent" style="font-weight: bold; color: var(--accent-gold);">【章一覧（タップで直接移動）】</p>
+          <div class="portal-grid" id="portal-chapter-list"></div>
         `
       },
       {
         title: "1# 黎明",
         songTitle: "Ember!",
         mp3File: "",
-        lyrics: `"Once, melodies ruled the sky... 
-Now, shadows choke the final note... 
-But in the ruins─a spark screams!!"
-
-錆びたオルゴール 針は止まった 
-闇に奪われた 調べの翼 
-Don't fade... 震える旋律 
-灰の中の Emberの灯火
-
-燃え上がれ!、Ember!
-Break the chains! 紅蓮のStage 
-沈黙を切り裂く 歌のヤイバ`,
+        lyrics: `"Once, melodies ruled the sky...\nNow, shadows choke the final note...\nBut in the ruins─a spark screams!!"\n\n錆びたオルゴール 針は止まった\n闇に奪われた 調べの翼\nDon't fade... 震える旋律\n灰の中の Emberの灯火\n\n燃え上がれ!、Ember!\nBreak the chains! 紅蓮のStage\n沈黙を切り裂く 歌のヤイバ`,
         content: `
           <p>かつて、世界は「光」と呼ばれるエネルギーで満ち、人々は音楽と共に平和に暮らしていた。だが、その均衡は突如として崩れた。</p>
           <p>——影の勢力——<br>それは、光を憎み、世界を闇で覆い尽くそうとする者たち。彼らが現れて以来、かつて輝いていた街は廃墟と化し、空は重く垂れ込め、音楽は静寂に呑み込まれた。</p>
@@ -446,15 +452,7 @@ Break the chains! 紅蓮のStage
         title: "2# 交戦",
         songTitle: "Light of Resistance",
         mp3File: "",
-        lyrics: `Stand and fight, warriors of light!  
-Burning bright, we’ll end the night!  
-Rise again, let the shadows fall,  
-The time has come, we’ll break the wall!  
-
-Raise your voice for the light of resistance!  
-闇を越え、新たな時代へ  
-Raise your blade for the light of resistance!  
-絆を胸に、勝利を掴め！`,
+        lyrics: `Stand and fight, warriors of light!\nBurning bright, we’ll end the night!\nRise again, let the shadows fall,\nThe time has come, we’ll break the wall!\n\nRaise your voice for the light of resistance!\n闇を越え、新たな時代へ\nRaise your blade for the light of resistance!\n絆を胸に、勝利を掴め！`,
         content: `
           <p>廃墟と化した都市の中心部。かつて栄華を誇った高層ビル群は無惨に崩れ、無数の瓦礫が荒野と化していた。</p>
           <p>「影の勢力が集結している……ここが正念場だな。」マークメタルが背中の長刀・蛍丸に手を掛け、戦場を見渡す。「やるっきゃないね！」モアメタルが拳を握りしめる。「ええ……負けるわけにはいかない。」スーメタルが静かに頷いた。</p>
@@ -470,13 +468,7 @@ Raise your blade for the light of resistance!
         title: "3# 脅威",
         songTitle: "Unstoppable Darkness",
         mp3File: "",
-        lyrics: `影が伸びる 逃げ場のない世界
-足元を裂く 暗闇の調べ
-光を嘲笑う 黒い爪
-希望を砕く その闇の声
-
-We are the shadow, ruling the night
-Unstoppable force, extinguishing light`,
+        lyrics: `影が伸びる 逃げ場のない世界\n足元を裂く 暗闇の調べ\n光を嘲笑う 黒い爪\n希望を砕く その闇の声\n\nWe are the shadow, ruling the night\nUnstoppable force, extinguishing light`,
         content: `
           <p>荒れ果てた都市の暗闇の中、影の勢力の拠点は不気味な沈黙に包まれていた。その静寂の中で、四つの影が動いていた——メタル四天王。</p>
           <p>不協和音の支配者・ルマンドX。破壊の咆哮・響メタル。舞う死神・紅白メタル。そして、最も沈黙を守る暗殺者・サヤメタ。彼女の手にあるのは一枚の黒い折り紙——影折。折り畳まれた闇の力は、紙のように軽く、それでいて鉄すらも断ち切る殺意を秘めていた。</p>
@@ -490,14 +482,7 @@ Unstoppable force, extinguishing light`,
         title: "4# 紅白",
         songTitle: "緋色の決戦 ~紅白メタル~",
         mp3File: "",
-        lyrics: `「最強で最高な…俺の才能だ！」
-踊る刃 風を裂く
-扇が誘う赤と白の舞
-影のリズムに誰も追いつけない
-
-運命すらも 俺の掌
-Scarlet Showdown！
-「絶対と絶命で…己を試せ」`,
+        lyrics: `「最強で最高な…俺の才能だ！」\n踊る刃 風を裂く\n扇が誘う赤と白の舞\n影のリズムに誰も追いつけない\n\n運命すらも 俺の掌\nScarlet Showdown！\n「絶対と絶命で…己を試せ」`,
         content: `
           <p>戦場に舞う紅白の扇。紅白メタルは飄々とした笑みを浮かべ、優雅な舞踏のように扇から風刃を繰り出す。「最強で最高な、俺の才能だ。」</p>
           <p>だが、BABYMETALもまた踊るように戦う戦士たち。モアとユイが彼の舞のリズムをトレースし、隙を作った瞬間、スーメタルの歌声が閃光となって貫いた。「……これもまた、運命。絶対と絶命で己を試せ……か。」四天王初の敗北が戦場に冷たい風を吹かせた。</p>
@@ -511,11 +496,7 @@ Scarlet Showdown！
         title: "5# 策略",
         songTitle: "漆黒のRondo",
         mp3File: "",
-        lyrics: `深淵の玉座に 揺れる黒き光
-敗北の衝撃が 静寂を裂き
-Eternal Nightmare, Dark Destiny
-虚飾の輝きは 風に消え去り
-魂の叫び 漆黒へ溶け込み`,
+        lyrics: `深淵の玉座に 揺れる黒き光\n敗北の衝撃が 静寂を裂き\nEternal Nightmare, Dark Destiny\n虚飾の輝きは 風に消え去り\n魂の叫び 漆黒へ溶け込み`,
         content: `
           <p>暗黒の城の奥深く、玉座の間。紅白メタルの敗北を受け、響メタルが荒々しく壁を叩く。ルマンドXは冷徹に告げた。「不要な駒が消えただけ。……適任がいる。あの男は、心に迷いを抱えている。」</p>
           <p>光の戦士を闇へ堕とす策略。ルマンドの視線を受けたサヤメタは、感情を一切見せずに短く答える。「——承知。」影の勢力が静かに動き出した。</p>
@@ -529,14 +510,7 @@ Eternal Nightmare, Dark Destiny
         title: "6# 闇堕",
         songTitle: "Echoes of Tomorrow",
         mp3File: "",
-        lyrics: `"In the silence before dawn,
-I hear the echoes calling me.
-Through the dark, through the light,
-I’ll rise again."
-
-Echoes, echoes of tomorrow
-We won’t stop! We won’t fall!
-未来を信じて 今羽ばたく`,
+        lyrics: `"In the silence before dawn,\nI hear the echoes calling me.\nThrough the dark, through the light,\nI’ll rise again."\n\nEchoes, echoes of tomorrow\nWe won’t stop! We won’t fall!\n未来を信じて 今羽ばたく`,
         content: `
           <p>激しい戦場の中、狙われたのはマークメタルだった。ルマンドXの不協和音が彼の心を蝕む。「心にわずかでも迷いがあれば、この音はお前自身を蝕む。」</p>
           <p>「——隙、あり。」サヤメタの影折が閃く。すうちゃんの補助防御も虚しく、マークメタルは闇の波動に包まれた。「守れなかった」という罪悪感が心を塗りつぶし、彼の瞳から光が消え去った。影の四天王・マークメタルの誕生だった。</p>
@@ -550,12 +524,7 @@ We won’t stop! We won’t fall!
         title: "7# 喪失",
         songTitle: "\"Lost in the Shadow\"",
         mp3File: "",
-        lyrics: `冷たい風が 街を裂く
-壊れた声が 夜に溶けて
-Lost in the shadow, frozen in time
-光と闇の狭間で
-揺らぐ心 撃ち抜かれても
-We won’t let go, We won’t give in`,
+        lyrics: `冷たい風が 街を裂く\n壊れた声が 夜に溶けて\nLost in the shadow, frozen in time\n光と闇の狭間で\n揺らぐ心 撃ち抜かれても\nWe won’t let go, We won’t give in`,
         content: `
           <p>街に足を踏み入れた三人は、破損し機能停止したすぅちゃんを発見する。そして突如響いた重厚な銃声。狙撃手は、漆黒の対戦車ライフルを構えたマークメタルだった。</p>
           <p>「マーク！！ 目を覚まして！！」スーメタルの声も届かない。「戦えない、撃てない、歌えない……！」迷いの中で影の包囲網が狭まり、三人はすぅちゃんを抱えて涙の撤退を余儀なくされる。</p>
@@ -569,13 +538,7 @@ We won’t let go, We won’t give in`,
         title: "8# 残滓",
         songTitle: "静寂のムコウ",
         mp3File: "",
-        lyrics: `静かに響く 足音だけが
-冷たい廊下を 滲んでゆく
-あの日の光は どこへ消えた？
-今もまだ この胸に残るのに
-
-差し出した刃 受け取らぬまま
-君はただ 黙って銃を構えた`,
+        lyrics: `静かに響く 足音だけが\n冷たい廊下を 滲んでゆく\nあの日の光は どこへ消えた？\n今もまだ この胸に残るのに\n\n差し出した刃 受け取らぬまま\n君はただ 黙って銃を構えた`,
         content: `
           <p>暗黒の城の広間。サヤメタはマークメタルの背後に立ち、一振りの長刀を差し出した。「——持ってきた、蛍丸。」だがマークは振り返りもせず冷酷に告げる。「……そんなものもう必要ない。」</p>
           <p>サヤメタは去り際、独り言のように呟く。「——お前は、本当にそれでいいのか？」無言の背中を残し、彼女は無意識に蛍丸の柄を握りしめていた。</p>
@@ -589,13 +552,7 @@ We won’t let go, We won’t give in`,
         title: "9# 奮起",
         songTitle: "unreachable voice",
         mp3File: "",
-        lyrics: `壊れた街の 片隅に 
-残された 小さな声がある 
-(If this song can reach you)
-この歌が もし君に届くなら 
-もう一度だけ 振り向いてほしい 
-影に消えた 君の背中 
-それでも光を 信じてるから`,
+        lyrics: `壊れた街の 片隅に \n残された 小さな声がある \n(If this song can reach you)\nこの歌が もし君に届くなら \nもう一度だけ 振り向いてほしい \n影に消えた 君の背中 \nそれでも光を 信じてるから`,
         content: `
           <p>拠点に戻った三人は、傷だらけのすぅちゃんを囲んでいた。起動スイッチを押しても応えない。「……でも、まだ終わりじゃない。」スーメタルが立ち上がる。「歌の力を極めれば、私たちの声がマークに届くかもしれない。」</p>
           <p>すぅちゃんを修理する方法を探しながら、もっと強くなる。新たな光を生み出すため、三人は特訓の地へと歩み出した。</p>
@@ -608,26 +565,8 @@ We won’t let go, We won’t give in`,
       {
         title: "10# 蛍丸",
         songTitle: "影の円舞曲",
-        mp3File: "https://files.catbox.moe/phvkwp.mp3", // ★動作確認済みCatbox音源
-        lyrics: `闇の帳 揺れる灯
-影に溶けたこの身を
-無心で振るう 刃の先
-迷いを斬れるか
-
-冷えた刃 鈍く光り
-空を裂いて 音が鳴る
-ただそれだけ ただそれだけ
-なのに胸が疼く
-
-剣の舞 影に溶け
-ただの器になればいい
-そう思うたび 揺らめくのは
-この手が知る 熱
-
-刀を納める 静寂
-鞘に消える余韻の音
-問うことすら 赦されぬ
-影は揺れながら`,
+        mp3File: "https://files.catbox.moe/phvkwp.mp3", // ★動作確認済み
+        lyrics: `闇の帳 揺れる灯\n影に溶けたこの身を\n無心で振るう 刃の先\n迷いを斬れるか\n\n冷えた刃 鈍く光り\n空を裂いて 音が鳴る\nただそれだけ ただそれだけ\nなのに胸が疼く\n\n剣の舞 影に溶け\nただの器になればいい\nそう思うたび 揺らめくのは\nこの手が知る 熱\n\n刀を納める 静寂\n鞘に消える余韻の音\n問うことすら 赦されぬ\n影は揺れながら`,
         content: `
           <p>暗黒の城の一室。サヤメタは目の前の一振り——蛍丸を抜き放つ。無心で型を振るうが、心が妙にざわつく。「（私がこれまで斬ってきたものは、何だったのか？）」</p>
           <p>「（——考えるな。感じろ。）」意識を振り払うように刀を振るい、鞘に納める。——キーン——。静寂の中、彼女は部屋の隅に刀を立てかけると、淡々と呟いた。「——出てくる。」影の城を後にした。</p>
@@ -641,14 +580,7 @@ We won’t let go, We won’t give in`,
         title: "11# 遭遇",
         songTitle: "折りたたむ夜､ほどける朝｡",
         mp3File: "",
-        lyrics: `静寂に包まれた 夜の森
-手のひらに落ちる 冷たい光
-迷いの影を 折り畳んでいく
-
-木々の隙間に 差し込む声
-軽やかなステップ 風に舞う
-笑い合う姿 眩しすぎて
-影の世界が 揺らぎ始める`,
+        lyrics: `静寂に包まれた 夜の森\n手のひらに落ちる 冷たい光\n迷いの影を 折り畳んでいく\n\n木々の隙間に 差し込む声\n軽やかなステップ 風に舞う\n笑い合う姿 眩しすぎて\n影の世界が 揺らぎ始める`,
         content: `
           <p>静寂の森の大樹の根元で、サヤメタは無意識に黒い紙を取り出し、影折を折りかけて手を止めていた。「（私は今、何のためにこれを折る？）」</p>
           <p>そこへ特訓にやってきたスー、モア、ユイ。「それ、なに持ってるの？」「あ、いやまあ——折り—紙？」「じゃあ、一緒にどう？」互いの素性を知らぬまま、光と影の初めての出会いが交わされた。</p>
@@ -662,14 +594,7 @@ We won’t let go, We won’t give in`,
         title: "12# 歌声",
         songTitle: "Awakening Voice",
         mp3File: "",
-        lyrics: `"We fight with the light,
-never to succumb to shadows.
-Believing in the future, …we sing."
-
-Awaken, the voice inside my soul,
-Breaking silence, let it unfold,
-光と影 交わる瞬間
-この歌が運命を導く`,
+        lyrics: `"We fight with the light,\nnever to succumb to shadows.\nBelieving in the future, …we sing."\n\nAwaken, the voice inside my soul,\nBreaking silence, let it unfold,\n光と影 交わる瞬間\nこの歌が運命を導く`,
         content: `
           <p>スーメタルの透き通るような歌声が森に響く。木陰から見つめるサヤメタの頬を、温かい涙がつたった。「（私が…歌で涙するなど…）」</p>
           <p>「サヤメタさんも、歌ってみれば？」促されて歌った彼女の声は、思いのほか澄んでいた。「すごい！ 素質あるかも」と褒められ、サヤメタは「…いやぁ、それほどでもぉ」と小さく照れ笑いを浮かべた。</p>
@@ -683,12 +608,7 @@ Breaking silence, let it unfold,
         title: "13# 絶叫",
         songTitle: "Scream It Out !!",
         mp3File: "",
-        lyrics: `息を止めて そっと耳を澄ませば
-聞こえてくるよ 心の声が
-アーッ！！ 出し切れ！
-腹の底から 声を響かせて
-気持ち全部ぶつけてけ！
-｢うん、悪く…ないかも？」`,
+        lyrics: `息を止めて そっと耳を澄ませば\n聞こえてくるよ 心の声が\nアーッ！！ 出し切れ！\n腹の底から 声を響かせて\n気持ち全部ぶつけてけ！\n｢うん、悪く…ないかも？」`,
         content: `
           <p>「スクリームは勢いだよ！ こうやって全力で、アーーーーーッ！！！」モアメタルの森を揺るがす絶叫に目を丸くするサヤメタ。「気持ちを全部込めて叫ぶんだよ！」</p>
           <p>「そういえば昨日さ、歌のあとなんか…言ってたよね？」と突っ込まれ、恥ずかしさのあまり「アーーーーーッ、！」と叫んでしまうサヤメタ。少しだけ口元が緩んだ。</p>
@@ -702,12 +622,7 @@ Breaking silence, let it unfold,
         title: "14# 舞踏",
         songTitle: "Step Into the Beat!!",
         mp3File: "",
-        lyrics: `ステップを踏んで ほらリズムに乗れ
-(Clap! Clap! ) One, two, three─step in time
-Let your heartbeat match with mine
-Step into the beat, 踊るように
-風を切って もっと自由に
-「いい感じ！」`,
+        lyrics: `ステップを踏んで ほらリズムに乗れ\n(Clap! Clap! ) One, two, three─step in time\nLet your heartbeat match with mine\nStep into the beat, 踊るように\n風を切って もっと自由に\n「いい感じ！」`,
         content: `
           <p>モアとユイのダンスを見学していたサヤメタも、見よう見まねでステップを踏み出す。次第にリズムを掴み「楽しい」と感じ始めたその時——。</p>
           <p>「ちょっ、サヤメタさん！？ その動き、なんかカニみたいなんだけどww」とお菓子を食べながら爆笑するモア。「笑って…ない」と視線を逸らすが、口元は完全に緩んでいた。「いい感じ！」三人の影が重なる。</p>
@@ -721,12 +636,7 @@ Step into the beat, 踊るように
         title: "15# 折紙",
         songTitle: "Wings of Peace ~平和の翼~",
         mp3File: "",
-        lyrics: `闇の中で 迷い続けた
-光を求めて 歩いてきた
-この手の中に 折り重ねた
-小さな希望 平和の翼
-鶴のように羽ばたいて 新しい空を描こう
-Wings of Peace 闇の先 光が待つ世界へ`,
+        lyrics: `闇の中で 迷い続けた\n光を求めて 歩いてきた\nこの手の中に 折り重ねた\n小さな希望 平和の翼\n鶴のように羽ばたいて 新しい空を描こう\nWings of Peace 闇の先 光が待つ世界へ`,
         content: `
           <p>焚き火の前で、サヤメタは影折を折鶴へと折り直す。「平和を象徴する形って、素敵だね」とスーメタルに言われハッとする。モアたちも挑戦するが、スーが真剣に完成させたのはどう見てもカニだった。</p>
           <p>「それ、カニじゃね？」スー「なめたら…いかんぜよ。」大爆笑の中、サヤメタはカニを手に取り呟く。「（こっちの方が難しいのに……恐ろしい子。）」心に小さな温もりが灯っていた。</p>
@@ -740,10 +650,7 @@ Wings of Peace 闇の先 光が待つ世界へ`,
         title: "16# 共鳴",
         songTitle: "「Lunar Eclipse」",
         mp3File: "",
-        lyrics: `静寂に響く刃の声 月影揺れて闇を裂いた
-Lunar eclipse, 夜を切り裂け
-交わることなき宿命でも 輝く意志が呼び合うなら
-「全力で戦える」 二つの意志が交差する`,
+        lyrics: `静寂に響く刃の声 月影揺れて闇を裂いた\nLunar eclipse, 夜を切り裂け\n交わることなき宿命でも 輝く意志が呼び合うなら\n「全力で戦える」 二つの意志が交差する`,
         content: `
           <p>城に戻ったサヤメタは蛍丸を抜き、自らの迷いと向き合う。その時、刀がキィィィンと鳴り響いた。一方、森に残された三人は、サヤメタが置き土産のように残していった折りかけの紙を見つける。</p>
           <p>スーメタルが指先で折り進め、完成した瞬間、折り紙が淡い光を放った。「……スー、完成させたな」「サヤメタ、これを置いていったのって……？」遠く離れた場所で、二人は同じ月を見上げ「全力で戦える」と誓い合う。</p>
@@ -757,11 +664,7 @@ Lunar eclipse, 夜を切り裂け
         title: "17# 対峙",
         songTitle: "滅びの序曲",
         mp3File: "",
-        lyrics: `霧の帳が 音を消し去る 瓦礫の上に 影が立つ
-引き裂かれた 宿命を超えろ
-Eclipse of fate, 燃え上がれ
-「戦いの果てに 何が残る？」
-「それでも進む、己の意志で！」`,
+        lyrics: `霧の帳が 音を消し去る 瓦礫の上に 影が立つ\n引き裂かれた 宿命を超えろ\nEclipse of fate, 燃え上がれ\n「戦いの果てに 何が残る？」\n「それでも進む、己の意志で！」`,
         content: `
           <p>霧立ち込める廃墟の戦場。響メタル、爪を鳴らすルマンドX、そして対戦車ライフルを構えるマークメタル。フードを深く被ったサヤメタも影に徹し佇んでいた。</p>
           <p>ルマンドの爪が瓦礫を擦る不快な音に怯えるユイメタル。スーメタルはマークメタルを見つめ息を呑むが、覚悟を決めて前に立つ。「構えて！」戦いの火蓋が切って落とされた。</p>
@@ -775,11 +678,7 @@ Eclipse of fate, 燃え上がれ
         title: "18# 響鋼",
         songTitle: "響､メタる！ ~響メタル~",
         mp3File: "",
-        lyrics: `どっこいしょ！
-この刃が 唸るたび 祭りの音が 響き渡る
-誰が止められる 俺を？ 回転ノコギリが 唸りを上げる
-わっしょい！ わっしょい！ 共に叫べ！
-ソイヤ！ソイヤ！ ヨイショ！どっこいしょ！`,
+        lyrics: `どっこいしょ！\nこの刃が 唸るたび 祭りの音が 響き渡る\n誰が止められる 俺を？ 回転ノコギリが 唸りを上げる\nわっしょい！ わっしょい！ 共に叫べ！\nソイヤ！ソイヤ！ ヨイショ！どっこいしょ！`,
         content: `
           <p>「ハッハァ！来いよ！」響メタルのメカニカルブレードが地面を砕く。耳に残るルマンドの不協和音に怯え動けないユイメタルを庇い、スーメタルが突き飛ばして難を逃れる。</p>
           <p>モアが背後からタックルを仕掛け、スーメタルが渾身の一撃を放つ。だが戦場の隅では、マークメタルが冷酷にライフルを構えていた。</p>
@@ -793,10 +692,7 @@ Eclipse of fate, 燃え上がれ
         title: "19# 記憶",
         songTitle: "Code of Hope ~すぅちゃん~",
         mp3File: "",
-        lyrics: `光を運ぶデータの海 冷たい回路に宿る命
-Shine, ワタシのコードが光る Cry, キミの涙が教えてくれる
-「敵ノ配置ヲ、分析」「君達ヲ、守ル」「カイホウ、カンリョウ」
-冷たい回路に宿る命 「アリガトウ。」`,
+        lyrics: `光を運ぶデータの海 冷たい回路に宿る命\nShine, ワタシのコードが光る Cry, キミの涙が教えてくれる\n「敵ノ配置ヲ、分析」「君達ヲ、守ル」「カイホウ、カンリョウ」\n冷たい回路に宿る命 「アリガトウ。」`,
         content: `
           <p>マークメタルの銃口を前に、モアメタルがバッグからすぅちゃんを取り出し掲げる。「マーク、この子を見てよ！」だが引き金は引かれ、すぅちゃんは弾き飛ばされた。</p>
           <p>「ピー…サイキドウ、シマシタ」ボロボロの体でマークメタルの元へ這い寄るすぅちゃん。「マークメタル……アナタガ……ワタシヲ……ツクッテクレタ……キオク……カイホウ……」光が暗くなり、マークメタルの瞳に記憶が蘇る。</p>
@@ -810,10 +706,7 @@ Shine, ワタシのコードが光る Cry, キミの涙が教えてくれる
         title: "20# 業火",
         songTitle: "Fading Light ~mark-metal~",
         mp3File: "",
-        lyrics: `君を創った日々が輝いてた だけど闇が僕を飲み込み
-Fading light, 消えゆく光 僕を導いてくれた声
-君が示してくれた道 僕はもう戻れないけれど
-「ありがとう。」`,
+        lyrics: `君を創った日々が輝いてた だけど闇が僕を飲み込み\nFading light, 消えゆく光 僕を導いてくれた声\n君が示してくれた道 僕はもう戻れないけれど\n「ありがとう。」`,
         content: `
           <p>記憶を取り戻したマークメタルは、崩れた窓枠を掴み、かつて愛用した蛍丸の型で響メタルのブレードを受け流す！「これは…"俺"の力だ。」</p>
           <p>ルマンドXが背後に炎を放った瞬間、マークは三人を振り返った。「すず香、最愛、由結。すまなかった…。お前たちは、正しい道をゆけ。」響メタルを抱きかかえ、燃え盛る業火の中へ。「…ありがとう…」炎の中に消えていった。</p>
@@ -825,12 +718,9 @@ Fading light, 消えゆく光 僕を導いてくれた声
       },
       {
         title: "21# 世界",
-        songTitle: "ルマンドＸのテーマ ~𝐋𝐔𝐌𝐎𝐍𝐃𝐄-𝕏~",
+        songTitle: "ルマンドＸのテーマ ~LUMONDE-X~",
         mp3File: "",
-        lyrics: `「お前もズタズタにしてやろうかぁ！」
-闇に染まる世界の中で 鋭い爪が運命を切り裂く
-光など愚か者の夢 影こそが支配する時代
-闇の波動が広がる 支配者が告げる真実`,
+        lyrics: `「お前もズタズタにしてやろうかぁ！」\n闇に染まる世界の中で 鋭い爪が運命を切り裂く\n光など愚か者の夢 影こそが支配する時代\n闇の波動が広がる 支配者が告げる真実`,
         content: `
           <p>荒涼たる巨大アリーナ。かつて音楽と歓声に包まれた場所は、ルマンドXの支配する暗黒の世界となっていた。爪を鳴らす嫌な音に、ユイメタルは耳を塞ぎ膝をつく。</p>
           <p>「大丈夫、この光で影を消し去るよ」とスーメタルが立ち塞がり、モアメタルと共に波動を防ぐ防壁となる。</p>
@@ -844,10 +734,7 @@ Fading light, 消えゆく光 僕を導いてくれた声
         title: "22# 決起",
         songTitle: "RISE AGAIN",
         mp3File: "",
-        lyrics: `冷え切った空気 深く沈む影 遠ざかる希望を 掴み取れ
-RISE AGAIN!! まだ終わらせない この鼓動が叫ぶ
-囁く影が 心を裂く だけど響いた 仲間の声が
-叫べ 闇を裂け!! 燃え尽きるまで 駆け抜けろ!!`,
+        lyrics: `冷え切った空気 深く沈む影 遠ざかる希望を 掴み取れ\nRISE AGAIN!! まだ終わらせない この鼓動が叫ぶ\n囁く影が 心を裂く だけど響いた 仲間の声が\n叫べ 闇を裂け!! 燃え尽きるまで 駆け抜けろ!!`,
         content: `
           <p>「無理だよ……もう……」と怯えるユイメタル。スーメタルが語りかける。「思い出して。サヤメタと一緒に特訓したことを。」</p>
           <p>ユイの脳裏に蘇る、サヤメタのカニダンス、スーちゃんのカニ折り紙……「……カニ？」「ちーがーーう！！！」モアの音速ツッコミ！ 胸に熱が灯り、立ち上がったユイメタル。三人の隊列が整った。</p>
@@ -861,10 +748,7 @@ RISE AGAIN!! まだ終わらせない この鼓動が叫ぶ
         title: "23# 武闘",
         songTitle: "闇の爪 – Shadow’s Grip",
         mp3File: "",
-        lyrics: `爪が引き裂く 乾いた空気 心を揺らす不協和音
-深く沈む意識の中 冷たい指が触れる
-逃げ出せない 絡みつく闇 軋む爪の音が響く
-抗え 光を灯せ 影を断ち切れ`,
+        lyrics: `爪が引き裂く 乾いた空気 心を揺らす不協和音\n深く沈む意識の中 冷たい指が触れる\n逃げ出せない 絡みつく闇 軋む爪の音が響く\n抗え 光を灯せ 影を断ち切れ`,
         content: `
           <p>「もう、逃げない。」三人は鮮やかなステップでルマンドXの爪撃を躱す。だが、地面から広がる黒い紋様が三人の足を絡め捕る。</p>
           <p>絶体絶命の瞬間、モアメタルが渾身のスクリーム！「アアァァァァァーーーーーーーッ！！！」拘束が解け、スーメタルが光の波動を放ち、ユイメタルが戦場を駆ける！</p>
@@ -878,10 +762,7 @@ RISE AGAIN!! まだ終わらせない この鼓動が叫ぶ
         title: "24# 決着",
         songTitle: "METAL Requiem",
         mp3File: "",
-        lyrics: `(METAL Requiem！) 響き渡れ (METAL Requiem！) 闇を貫け
-この歌が導く最後の鼓動 全てを砕く音となれ！
-迷いを断ち切るそのステップ いま、解き放て
-METAL Requiem！`,
+        lyrics: `(METAL Requiem！) 響き渡れ (METAL Requiem！) 闇を貫け\nこの歌が導く最後の鼓動 全てを砕く音となれ！\n迷いを断ち切るそのステップ いま、解き放て\nMETAL Requiem！`,
         content: `
           <p>モアメタルのスクリーム、ユイメタルの軽やかなステップと二人のダブルキックがルマンドXを揺るがす！ そして三位一体の隊列からスーメタルの歌声が解き放たれる！</p>
           <p>「私の歌を聴けぇぇぇっ！！！」光の波動が闇を吹き飛ばす。「闇は何度でも還ってくる……」ルマンドXは消滅した。だが、まだ最後の一人が残っていた。</p>
@@ -895,10 +776,7 @@ METAL Requiem！`,
         title: "25# 再会",
         songTitle: "- 影の王国 -",
         mp3File: "",
-        lyrics: `光を鎖し 孤独に染まる この手に遺るのは 滅びの刃
-Shadow Kingdom 孤独のKingdom
-闇に呑まれ 光を壊す
-いま唯独り 生きるだけ「Shadow Kingdom…」`,
+        lyrics: `光を鎖し 孤独に染まる この手に遺るのは 滅びの刃\nShadow Kingdom 孤独のKingdom\n闇に呑まれ 光を壊す\nいま唯独り 生きるだけ「Shadow Kingdom…」`,
         content: `
           <p>瓦礫の上、黒いマントを翻し、背に長刀を担いだ影が現れる。フードを外したその顔は——サヤメタ。「ここで終わりだ。私は、影の四天王。」</p>
           <p>森での特訓は幻だったのかと動揺するモアとユイ。スーメタルは静かに言った。「構えるよ。彼女がどんな想いを抱えていようと、立ち止まるわけにはいかない。」サヤメタが静かに蛍丸を抜く。</p>
@@ -912,11 +790,7 @@ Shadow Kingdom 孤独のKingdom
         title: "26# 影折",
         songTitle: "影折 - Shadow's Wrath -",
         mp3File: "",
-        lyrics: `闇に沈む 静寂の刃 無数の影が 舞い踊る
-夜に咲くは 黒の華
-刻め 影折の刻印 無慈悲に舞う 刃の雨
-目を逸らせば 影が囁く ｢抗うことに 意味はない｣と
-Shadow’s Wrath!!`,
+        lyrics: `闇に沈む 静寂の刃 無数の影が 舞い踊る\n夜に咲くは 黒の華\n刻め 影折の刻印 無慈悲に舞う 刃の雨\n目を逸らせば 影が囁く ｢抗うことに 意味はない｣と\nShadow’s Wrath!!`,
         content: `
           <p>「——影折。」無数の影の刃が空を裂く！ サヤメタは影折だけでなく蛍丸をも抜き放ち、圧倒的なスピードで三人を追い詰める。</p>
           <p>モアメタルのスカートが裂け、ユイメタルの袖を掠める。「スクリームでぶっ飛ばす！」「負けない！」三人はサヤメタに向かって駆けた。</p>
@@ -930,10 +804,7 @@ Shadow’s Wrath!!`,
         title: "27# 舞闘",
         songTitle: "Dancerble Fighter.",
         mp3File: "",
-        lyrics: `影の刃が舞う 闇を裂いて進め
-光と影が 交わることなく 運命のリズム 刻み続ける
-影と光は…踊れない？ …なら、見せてあげる
-その名を刻め─Danceable Fighter.`,
+        lyrics: `影の刃が舞う 闇を裂いて進め\n光と影が 交わることなく 運命のリズム 刻み続ける\n影と光は…踊れない？ …なら、見せてあげる\nその名を刻め─Danceable Fighter.`,
         content: `
           <p>舞いながら闘うサヤメタ。「サヤメタさん、答えてよ！ あの時私たちは──」「たまたま出会っただけだ。私には影しかない。」</p>
           <p>「折り紙を置いていったのは、武器を完成させるためじゃないの！？」モアの指摘にサヤメタの動きが止まる。スーメタルが告げる。「ならば……歌で語りなさい。」</p>
@@ -947,11 +818,7 @@ Shadow’s Wrath!!`,
         title: "28# 音撃",
         songTitle: "Beyond the Darkness",
         mp3File: "",
-        lyrics: `"Once, we sang as one... Now, we stand as rivals."
-交わした歌声は今も胸に なぜ今は刃を向け合うのか
-Beyond the darkness, we will rise,
-闇を超えて、光を信じて
-"Even if fate divides us... our voices will never fade."`,
+        lyrics: `"Once, we sang as one... Now, we stand as rivals."\n交わした歌声は今も胸に なぜ今は刃を向け合うのか\nBeyond the darkness, we will rise,\n闇を超えて、光を信じて\n"Even if fate divides us... our voices will never fade."`,
         content: `
           <p>スーメタルの透き通る歌声が光を放ち、サヤメタが低く力強い歌で応戦する。二つの旋律が空気を震わせ、激しくぶつかり合う。</p>
           <p>互いの歌に心を揺さぶられ、涙しそうになる二人。「私たちは、あなたを取り戻したい……！！」「私は——影と共にある——！！」最後の決着へ。</p>
@@ -965,12 +832,7 @@ Beyond the darkness, we will rise,
         title: "29# 光折",
         songTitle: "光折 - Light of Resistance -",
         mp3File: "",
-        lyrics: `闇を切り裂く 微かな光 夜を照らすは 白の炎
-立ち向かえ 闇の檻 手を伸ばせば 光が満ちる
-掲げろ 光折の刃 未来を 切り拓けるなら
-目を逸らせば 影が囁く ｢抗うことに 意味はない｣と
-けれど胸には 確かな鼓動 光の果て
-Light of Resistance!!`,
+        lyrics: `闇を切り裂く 微かな光 夜を照らすは 白の炎\n立ち向かえ 闇の檻 手を伸ばせば 光が満ちる\n掲げろ 光折の刃 未来を 切り拓けるなら\n目を逸らせば 影が囁く ｢抗うことに 意味はない｣と\nけれど胸には 確かな鼓動 光の果て\nLight of Resistance!!`,
         content: `
           <p>影折の真の力を解放するサヤメタ。「ならば、私はこの光折を！」スーメタルが掲げたのは、あの未完成の折り紙だった。「本当は、影を捨てたかったんじゃないの？」</p>
           <p>「うるさい！ 私の行いが赦されるはずがないんだ！！」蛍丸と影折の連撃を、スーメタルは光折で真っ向から受け止める！ ——Light of Resistance！—— 閃光が爆発した。</p>
@@ -984,11 +846,7 @@ Light of Resistance!!`,
         title: "30# 昇華",
         songTitle: "No Light,No Shadow",
         mp3File: "",
-        lyrics: `No light, No shadow
-光がなければ 影も生まれない
-でも闇の中にだって ほら 希望の灯は揺れてる
-No light… No shadow… but still, you shine.
-君が残した 歌声は これからも 響き続ける──`,
+        lyrics: `No light, No shadow\n光がなければ 影も生まれない\nでも闇の中にだって ほら 希望の灯は揺れてる\nNo light… No shadow… but still, you shine.\n君が残した 歌声は これからも 響き続ける──`,
         content: `
           <p>サヤメタの身体が弾かれ、蛍丸が地面に突き立つ。駆け寄るユイとモア。「サヤメタさん！ 戦うのやめようよ！」サヤメタは微笑む。「あのときの特訓、楽しかったな……カニとか、ね。」</p>
           <p>「……今度こそ……光の中で……ありがとう。」光の粒が舞い、サヤメタは空へ溶けるように消えていった。</p>
@@ -1002,11 +860,7 @@ No light… No shadow… but still, you shine.
         title: "31# 由結",
         songTitle: "Into the Light",
         mp3File: "",
-        lyrics: `光と影 交わる運命 涙に揺れる未来を見つめて
-We’ll sing, we’ll shine, we fade into the light
-共に描いた未来の光
-手を取り合った瞬間忘れない
-「また会える、その日まで」 「信じてる、進むべき道」`,
+        lyrics: `光と影 交わる運命 涙に揺れる未来を見つめて\nWe’ll sing, we’ll shine, we fade into the light\n共に描いた未来の光\n手を取り合った瞬間忘れない\n「また会える、その日まで」 「信じてる、進むべき道」`,
         content: `
           <p>朝陽が差し込む廃墟。「辛かったけど楽しかったな。いい思い出になるよ」ユイメタルの言葉に二人が振り返る。「追いかけたい夢があるの。そのために、ここでみんなと別れることを決めた。」</p>
           <p>ツインテールのシュシュを外し、蛍丸の柄に結ぶ。「サヤメタさんに、あげる。」号泣するモアをスーが抱きしめる。「みんな、元気でね。ずっと、大好きだよ。」由結は光の中へと歩み去っていった。</p>
@@ -1020,10 +874,7 @@ We’ll sing, we’ll shine, we fade into the light
         title: "32# 暁光",
         songTitle: "暁 - アカツキ -",
         mp3File: "",
-        lyrics: `暁の光が裂く影 眠れる力が目を覚ます
-暁の炎が導く空 影を裂いて未来を掴め
-闇の中で見つけた答え 燃え尽きても守る誓い
-暁よ照らせこの命を 新しい空へ続く道を`,
+        lyrics: `暁の光が裂く影 眠れる力が目を覚ます\n暁の炎が導く空 影を裂いて未来を掴め\n闇の中で見つけた答え 燃え尽きても守る誓い\n暁よ照らせこの命を 新しい空へ続く道を`,
         content: `
           <p>戦場に残された静寂。スーメタルの掌の中で、光折と、サヤメタの遺した影折がゆっくりと絡み合い、翼を広げる鳥の形へと変わる。空へ放たれた折鶴は朝陽へと舞い上がった。</p>
           <p>「行こう。光を絶やさないために。」「よし、行こう！」「うん、一緒に。」「ね、一緒に！！」暁が、未来へ歩み出す二人の影を優しく照らしていた。──闇を超えて、光を信じて──。</p>
@@ -1037,10 +888,7 @@ We’ll sing, we’ll shine, we fade into the light
         title: "Bonus 1：あとがき・推薦・妄想劇場",
         songTitle: "LIGHT and SHADOW",
         mp3File: "",
-        lyrics: `闇を超えて 光を信じて
-この手を伸ばし 掴む未来へ
-涙の先に 見える光を
-共に歩こう どこまでも`,
+        lyrics: `闇を超えて 光を信じて\nこの手を伸ばし 掴む未来へ\n涙の先に 見える光を\n共に歩こう どこまでも`,
         content: `
           <p class="no-indent"><strong>【あとがき（抜粋）】</strong><br>
           32章にわたる物語が完結しました。サヤメタの消滅やユイメタルの別れは悲しい結末に見えるかもしれませんが、新たな道を見つけるための希望でもありました。闇を超えて、光を信じて。<br>
@@ -1062,10 +910,7 @@ We’ll sing, we’ll shine, we fade into the light
         title: "Bonus 2：まとめ＆ギャラリー",
         songTitle: "SHINING LIGHT",
         mp3File: "",
-        lyrics: `Shining light, we won't give in
-闇を突き抜けて行こう
-響け この歌声よ 希望を燃やして
-SHINING LIGHT.`,
+        lyrics: `Shining light, we won't give in\n闇を突き抜けて行こう\n響け この歌声よ 希望を燃やして\nSHINING LIGHT.`,
         content: `
           <p class="no-indent"><strong>【Dawn Beyond Shadows ～あらすじ総括～】</strong></p>
           <p>かつて世界は光に満ちていたが、影の四天王（ルマンドX・響・紅白・サヤメタ）の侵攻により闇に呑まれる。光の戦士BABYMETALはマークメタルの闇堕ちという悲劇を乗り越え、森で偶然出会ったサヤメタと心を通わせる。</p>
@@ -1083,10 +928,15 @@ SHINING LIGHT.`,
     let currentFontSizeIdx = 1;
 
     function init() {
-      renderToc();
-      loadChapter(0);
+      try {
+        renderToc();
+        loadChapter(0);
+      } catch (e) {
+        console.error("Init Error: ", e);
+      }
     }
 
+    // 目次サイドバー生成
     function renderToc() {
       const tocList = document.getElementById("toc-list");
       tocList.innerHTML = "";
@@ -1103,6 +953,26 @@ SHINING LIGHT.`,
       });
     }
 
+    // トップページ用「アルバム曲一覧」のHTMLを生成
+    function buildAlbumView() {
+      let html = '<div class="portal-grid">';
+      chapters.forEach((ch, idx) => {
+        if (idx === 0) return; // プロローグは除く
+        html += `
+          <div class="portal-card" onclick="loadChapter(${idx})">
+            <div>
+              <div class="portal-card-sub">${ch.title}</div>
+              <div class="portal-card-title">🎵 ${ch.songTitle}</div>
+            </div>
+            <div style="color: var(--accent-gold); font-size: 0.9rem;">▶</div>
+          </div>
+        `;
+      });
+      html += '</div>';
+      return html;
+    }
+
+    // 章の読み込み
     function loadChapter(index) {
       currentIndex = index;
       const ch = chapters[index];
@@ -1124,10 +994,51 @@ SHINING LIGHT.`,
         status.innerText = "（🎵 音源準備中）";
       }
 
-      document.getElementById("novel-content").innerHTML = ch.content;
-      document.getElementById("lyrics-content").innerText = ch.lyrics;
+      const tabLeft = document.getElementById("tab-left");
+      const tabRight = document.getElementById("tab-right");
+      const leftContent = document.getElementById("left-content");
+      const rightContent = document.getElementById("right-content");
 
-      switchView('novel');
+      if (currentIndex === 0) {
+        // ===== トップページ（目次・アルバムモード） =====
+        tabLeft.innerText = "📖 小説目次";
+        tabRight.innerText = "💿 アルバム";
+
+        leftContent.innerHTML = ch.content;
+        // 小説目次のグリッドを生成
+        const grid = document.getElementById("portal-chapter-list");
+        if (grid) {
+          grid.innerHTML = "";
+          chapters.forEach((item, idx) => {
+            if (idx === 0) return;
+            const card = document.createElement("div");
+            card.className = "portal-card";
+            card.onclick = () => loadChapter(idx);
+            card.innerHTML = `
+              <div>
+                <div class="portal-card-title">${item.title}</div>
+                <div class="portal-card-sub">🎵 ${item.songTitle}</div>
+              </div>
+              <div style="color: var(--accent-gold); font-size: 0.8rem;">読む →</div>
+            `;
+            grid.appendChild(card);
+          });
+        }
+
+        // アルバム一覧を右タブにセット
+        rightContent.innerHTML = buildAlbumView();
+        rightContent.style.textAlign = "left"; // グリッド用に左揃え
+      } else {
+        // ===== 各章（小説本文・歌詞カードモード） =====
+        tabLeft.innerText = "📖 小説本文";
+        tabRight.innerText = "📜 歌詞カード";
+
+        leftContent.innerHTML = ch.content;
+        rightContent.innerText = ch.lyrics;
+        rightContent.style.textAlign = "center"; // 歌詞は中央揃え
+      }
+
+      switchView('left');
 
       document.getElementById("prev-btn").disabled = (currentIndex === 0);
       document.getElementById("next-btn").disabled = (currentIndex === chapters.length - 1);
@@ -1136,22 +1047,23 @@ SHINING LIGHT.`,
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    function switchView(viewType) {
-      const tabNovel = document.getElementById("tab-novel");
-      const tabLyrics = document.getElementById("tab-lyrics");
-      const novelContent = document.getElementById("novel-content");
-      const lyricsContent = document.getElementById("lyrics-content");
+    // タブ切り替え（left = 小説/目次, right = 歌詞/アルバム）
+    function switchView(tabType) {
+      const tabLeft = document.getElementById("tab-left");
+      const tabRight = document.getElementById("tab-right");
+      const leftContent = document.getElementById("left-content");
+      const rightContent = document.getElementById("right-content");
 
-      if (viewType === 'novel') {
-        tabNovel.classList.add("active");
-        tabLyrics.classList.remove("active");
-        novelContent.classList.add("active");
-        lyricsContent.classList.remove("active");
+      if (tabType === 'left') {
+        tabLeft.classList.add("active");
+        tabRight.classList.remove("active");
+        leftContent.classList.add("active");
+        rightContent.classList.remove("active");
       } else {
-        tabNovel.classList.remove("active");
-        tabLyrics.classList.add("active");
-        novelContent.classList.remove("active");
-        lyricsContent.classList.add("active");
+        tabLeft.classList.remove("active");
+        tabRight.classList.add("active");
+        leftContent.classList.remove("active");
+        rightContent.classList.add("active");
       }
     }
 
@@ -1165,11 +1077,12 @@ SHINING LIGHT.`,
 
     function toggleFontSize() {
       currentFontSizeIdx = (currentFontSizeIdx + 1) % fontSizes.length;
-      document.getElementById("novel-content").style.fontSize = fontSizes[currentFontSizeIdx];
+      document.getElementById("left-content").style.fontSize = fontSizes[currentFontSizeIdx];
       document.getElementById("font-size-label").innerText = fontSizeLabels[currentFontSizeIdx];
     }
 
-    init();
+    // 起動
+    window.addEventListener("DOMContentLoaded", init);
   </script>
 </body>
 </html>
