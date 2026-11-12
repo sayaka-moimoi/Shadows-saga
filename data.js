@@ -5,20 +5,9 @@ const chapters = [
     title: "第1巻 もくじ・プロローグ",
     song: "Dawn Beyond Shadows (OP#)",
     mp3: "",
-    lyrics: `灰の中から目覚め 鎖を断ち切れ
-炎の中で 運命を刻む
-闇の彼方から 呼ぶ声が
-導くんだ Dawn Beyond Shadows
-
-もう恐れない 痛みさえも
-嵐を超えて We rise again
-
-Dawn beyond shadows, 燃え上がれ
-闇を裂き 未来を掴め
-声を上げて 信じる限り
-This is our destiny！`,
+    lyrics: `灰の中から目覚め 鎖を断ち切れ\n炎の中で 運命を刻む\n闇の彼方から 呼ぶ声が\n導くんだ Dawn Beyond Shadows\n\nもう恐れない 痛みさえも\n嵐を超えて We rise again\n\nDawn beyond shadows, 燃え上がれ\n闇を裂き 未来を掴め\n声を上げて 信じる限り\nThis is our destiny！`,
     content: `
-      <p class="no-indent" style="text-align: center; color: var(--accent-gold); font-weight: bold; margin-bottom: 2em; font-size: 1.1rem;">
+      <p class="no-indent" style="text-align: center; color: var(--accent-gold); font-weight: bold; margin-bottom: 2em; font-size: 1.15rem; line-height: 2.2;">
         抗い続ける者たちへ…<br>
         …光を信じ、闇を裂け！<br>
         闇の彼方に暁は訪れる<br>
@@ -27,17 +16,6 @@ This is our destiny！`,
         ～暁の彼方へ～
       </p>
       <hr style="border:0; border-top: 1px solid var(--border-color); margin: 25px 0;">
-      <p class="no-indent" style="font-weight: bold; color: var(--accent-gold);">【第1巻 章一覧】</p>
-      <p class="no-indent" style="font-size: 0.95rem; line-height: 2;">
-        1# 黎明　/　2# 交戦　/　3# 脅威　/　4# 紅白　/　5# 策略<br>
-        6# 闇堕　/　7# 喪失　/　8# 残滓　/　9# 奮起　/　10# 蛍丸<br>
-        11# 遭遇　/　12# 歌声　/　13# 絶叫　/　14# 舞踏　/　15# 折紙<br>
-        16# 共鳴　/　17# 対峙　/　18# 響鋼　/　19# 記憶　/　20# 業火<br>
-        21# 世界　/　22# 決起　/　23# 武闘　/　24# 決着　/　25# 再会<br>
-        26# 影折　/　27# 舞闘　/　28# 音撃　/　29# 光折　/　30# 昇華<br>
-        31# 由結　/　32# 暁光
-      </p>
-      <p style="margin-top: 25px;">下の「次の章 →」または右上の「目次 ☰」から本編へお進みください。</p>
     `
   },
   {
@@ -55,16 +33,22 @@ This is our destiny！`,
   },
   {
     vol: "第1巻：Dawn Beyond Shadows",
+    title: "2# 交戦",
+    song: "Light of Resistance",
+    mp3: "",
+    lyrics: `Stand and fight, warriors of light!\nBurning bright, we’ll end the night!\nRaise your voice for the light of resistance!\n闇を越え、新たな時代へ\nRaise your blade for the light of resistance!\n絆を胸に、勝利を掴め！`,
+    content: `
+      <p>廃墟の都市。「影の勢力が集結している……ここが正念場だな。」マークメタルが背中の長刀・蛍丸に手を掛ける。「やるっきゃないね！」モアメタルが拳を握る。</p>
+      <p>影の軍勢との激闘。スーメタルの光の波動、モアとユイの連撃、そしてマークの蛍丸の一閃が闇を薙ぎ払う！ だが四天王との決戦はまだこれからだった。</p>
+      <div class="preview-box">モアメタルDEATH🤘。第3話『脅威』！ プッチャキツネアーップ！🤘🤘アーーーーッ！</div>
+    `
+  },
+  {
+    vol: "第1巻：Dawn Beyond Shadows",
     title: "10# 蛍丸",
     song: "影の円舞曲",
     mp3: "https://files.catbox.moe/phvkwp.mp3",
-    lyrics: `闇の帳 揺れる灯 影に溶けたこの身を
-無心で振るう 刃の先 迷いを斬れるか
-冷えた刃 鈍く光り 空を裂いて 音が鳴る
-剣の舞 影に溶け ただの器になればいい
-そう思うたび 揺らめくのは この手が知る 熱
-刀を納める 静寂 鞘に消える余韻の音
-問うことすら 赦されぬ 影は揺れながら`,
+    lyrics: `闇の帳 揺れる灯 影に溶けたこの身を\n無心で振るう 刃の先 迷いを斬れるか\n冷えた刃 鈍く光り 空を裂いて 音が鳴る\n剣の舞 影に溶け ただの器になればいい\nそう思うたび 揺らめくのは この手が知る 熱\n刀を納める 静寂 鞘に消える余韻の音\n問うことすら 赦されぬ 影は揺れながら`,
     content: `
       <p>暗黒の城の一室。サヤメタは蛍丸を抜き、無心で型を振るう。だが振るうたびに胸が疼く。「（私がこれまで斬ってきたものは何だったのか？ 考えるな、感じろ。）」</p>
       <p>——キーン——。納刀の静寂の中、彼女は小さく呟いた。「——出てくる。」影の城を後にした。</p>
@@ -76,9 +60,7 @@ This is our destiny！`,
     title: "15# 折紙",
     song: "Wings of Peace ~平和の翼~",
     mp3: "",
-    lyrics: `闇の中で 迷い続けた 光を求めて 歩いてきた
-鶴のように羽ばたいて 新しい空を描こう
-Wings of Peace 闇の先 光が待つ世界へ`,
+    lyrics: `闇の中で 迷い続けた 光を求めて 歩いてきた\n鶴のように羽ばたいて 新しい空を描こう\nWings of Peace 闇の先 光が待つ世界へ`,
     content: `
       <p>焚き火の前で影折を美しい折鶴へと折り直すサヤメタ。スーメタルが真剣に折ったものは謎のカニだった。「それカニじゃね？」「なめたら…いかんぜよ。」サヤメタは呟く。「（こっちの方が難しいのに……恐ろしい子。）」</p>
       <div class="preview-box">光と影、それぞれの想いが交錯する時——『共鳴』 見て見て見てねー！！</div>
@@ -89,10 +71,7 @@ Wings of Peace 闇の先 光が待つ世界へ`,
     title: "31# 由結",
     song: "Into the Light",
     mp3: "",
-    lyrics: `We’ll sing, we’ll shine, we fade into the light
-あの日交わした笑顔を胸に
-手を取り合った瞬間忘れない
-「また会える、その日まで」`,
+    lyrics: `We’ll sing, we’ll shine, we fade into the light\nあの日交わした笑顔を胸に\n手を取り合った瞬間忘れない\n「また会える、その日まで」`,
     content: `
       <p>ツインテールのシュシュを外し、蛍丸の柄に結ぶユイメタル。「サヤメタさんに、あげる。憧れのスーちゃんを真似してポニーテールにするから、ひとつ余るんだ。」夢のために旅立つ由結を見送る二人。</p>
       <div class="preview-box">『暁光』 二人きりになったBABYMETALの、明日はどっちだ？</div>
