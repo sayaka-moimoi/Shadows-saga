@@ -346,9 +346,7 @@
   </div>
 
   <script>
-    // ===== 全編データ（1巻・2巻・外伝・考察）=====
     const chapters = [
-      // --- 第1巻 ---
       {
         vol: "第1巻：Dawn Beyond Shadows",
         title: "第1巻 もくじ・プロローグ",
@@ -375,8 +373,8 @@
         lyrics: `"Once, melodies ruled the sky...\nNow, shadows choke the final note...\nBut in the ruins─a spark screams!!"\n\n錆びたオルゴール 針は止まった\n闇に奪われた 調べの翼\nDon't fade... 震える旋律\n灰の中の Emberの灯火\n\n燃え上がれ!、Ember!\nBreak the chains! 紅蓮のStage\n沈黙を切り裂く 歌のヤイバ`,
         content: `
           <p>かつて、世界は「光」と呼ばれるエネルギーで満ち、人々は音楽と共に平和に暮らしていた。だが、その均衡は突如として崩れた。</p>
-          <p>——影の勢力——<br>光を憎み、世界を闇で覆い尽くそうとする者たち。輝いていた街は廃墟と化し、音楽は静寂に呑み込まれた。</p>
-          <p>しかし、闇に抗う歌の戦士「BABYMETAL」——スーメタル、モアメタル、ユイメタルがいた。彼女たちを支えるマークメタルと小型AI「すぅちゃん」。だが影の支配者ルマンドX、響、紅白、そして冷徹なサヤメタ率いるメタル四天王の影が迫っていた。</p>
+          <p>——影の勢力——<br>光を憎み、世界を闇で覆い尽くそうとする者たち。街は廃墟と化し、音楽は静寂に呑み込まれた。</p>
+          <p>しかし、闇に抗う歌の戦士「BABYMETAL」——スーメタル、モアメタル、ユイメタルがいた。彼女たちを支えるマークメタルと小型AI「すぅちゃん」。だが影の支配者ルマンドX、響、紅白、そして冷徹なサヤメタ率いるメタル四天王が立ちはだかる。</p>
           <div class="preview-box">次回、第2話『交戦』。荒廃した都市で激突！ 君は、刻の涙を見る。</div>
         `
       },
@@ -387,8 +385,8 @@
         mp3: "",
         lyrics: `Stand and fight, warriors of light!\nBurning bright, we’ll end the night!\nRaise your voice for the light of resistance!\n闇を越え、新たな時代へ\nRaise your blade for the light of resistance!\n絆を胸に、勝利を掴め！`,
         content: `
-          <p>廃墟の都市。「影の勢力が集結している……ここが正念場だな。」マークメタルが背中の長刀・蛍丸に手を掛ける。「やるっきゃないね！」モアメタルが拳を握る。「ええ……負けるわけにはいかない。」スーメタルが頷いた。</p>
-          <p>黒い波動をまとった兵士たちとの激闘。スーメタルの光の波動、モアとユイの連撃、そしてマークの蛍丸の一閃が影の軍勢を薙ぎ払う！ だが四天王との決戦はまだこれからだった。</p>
+          <p>廃墟の都市。「影の勢力が集結している……ここが正念場だな。」マークメタルが蛍丸に手を掛ける。「やるっきゃないね！」モアメタルが拳を握る。「ええ……負けるわけにはいかない。」スーメタルが頷いた。</p>
+          <p>スーメタルの光の波動、モアとユイの連撃、そしてマークの蛍丸の一閃が影の軍勢を薙ぎ払う！ だが四天王との決戦はまだこれからだった。</p>
           <div class="preview-box">モアメタルDEATH🤘。第3話『脅威』！ プッチャキツネアーップ！🤘🤘アーーーーッ！</div>
         `
       },
@@ -439,7 +437,7 @@
       {
         vol: "第1巻：Dawn Beyond Shadows",
         title: "7# 喪失",
-        song: "\"Lost in the Shadow\"",
+        song: "Lost in the Shadow",
         mp3: "",
         lyrics: `冷たい風が 街を裂く 壊れた声が 夜に溶けて\nLost in the shadow, frozen in time\n光と闇の狭間で\nWe won’t let go, We won’t give in`,
         content: `
@@ -473,7 +471,7 @@
         vol: "第1巻：Dawn Beyond Shadows",
         title: "10# 蛍丸",
         song: "影の円舞曲",
-        mp3: "https://files.catbox.moe/phvkwp.mp3", // ★動作確認済みCatbox音源
+        mp3: "https://files.catbox.moe/phvkwp.mp3",
         lyrics: `闇の帳 揺れる灯 影に溶けたこの身を\n無心で振るう 刃の先 迷いを斬れるか\n冷えた刃 鈍く光り 空を裂いて 音が鳴る\n剣の舞 影に溶け ただの器になればいい\nそう思うたび 揺らめくのは この手が知る 熱\n刀を納める 静寂 鞘に消える余韻の音\n問うことすら 赦されぬ 影は揺れながら`,
         content: `
           <p>暗黒の城の一室。サヤメタは蛍丸を抜き、無心で型を振るう。だが振るうたびに胸が疼く。「（私がこれまで斬ってきたものは何だったのか？ 考えるな、感じろ。）」</p>
@@ -1159,8 +1157,12 @@
     let currentFontSizeIdx = 1;
 
     function init() {
-      renderToc();
-      loadChapter(0);
+      try {
+        renderToc();
+        loadChapter(0);
+      } catch (err) {
+        console.error(err);
+      }
     }
 
     function renderToc() {
