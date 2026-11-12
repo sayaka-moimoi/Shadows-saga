@@ -176,8 +176,6 @@
       font-family: sans-serif;
       font-weight: bold;
     }
-
-    /* もくじ＆曲目グリッド共通デザイン */
     .link-list-card {
       margin-top: 30px;
       background: #111116;
@@ -222,8 +220,6 @@
       color: var(--accent-red);
       background: #1f1a1e;
     }
-
-    /* サイドバー */
     .sidebar {
       position: fixed;
       top: 0;
@@ -355,7 +351,8 @@
     <button class="nav-btn" id="next-btn" onclick="nextChapter()">次の章 →</button>
   </div>
 
-  <script src="data.js"></script>
+  <!-- キャッシュ対策付きで data.js を読み込む！ -->
+  <script src="data.js?v=20261112"></script>
   <script>
     let currentIndex = 0;
     const fontSizes = ["0.95rem", "1.05rem", "1.2rem"];
@@ -391,7 +388,6 @@
       });
     }
 
-    // 歌詞側：収録曲リストを生成
     function renderTrackGrid() {
       const grid = document.getElementById("track-grid");
       grid.innerHTML = "";
@@ -404,12 +400,11 @@
       });
     }
 
-    // 小説側（トップ時）：全章ジャンプグリッドを自動生成！
     function renderChapterGrid() {
       const grid = document.getElementById("chapter-grid");
       grid.innerHTML = "";
       chapters.forEach((ch, idx) => {
-        if (idx === 0) return; // トップ自身は除外
+        if (idx === 0) return;
         const btn = document.createElement("div");
         btn.className = "link-item-btn";
         btn.onclick = () => { loadChapter(idx); switchView('book'); };
@@ -441,7 +436,6 @@
       document.getElementById("novel-text").innerHTML = ch.content;
       document.getElementById("lyrics-text").innerText = ch.lyrics;
 
-      // トップページ（0）と各章での出し分け
       if (currentIndex === 0) {
         document.getElementById("top-chapter-portal").style.display = "block";
         document.getElementById("book-footer").style.display = "none";
