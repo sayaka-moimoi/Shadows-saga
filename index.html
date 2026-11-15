@@ -762,6 +762,7 @@
     function toggleFontSize() {
       currentFontSizeIdx = (currentFontSizeIdx + 1) % fontSizes.length;
       document.getElementById("novel-text").style.fontSize = fontSizes[currentFontSizeIdx];
+      document.getElementById("lyrics-text").style.fontSize = fontSizes[currentFontSizeIdx];
       document.getElementById("font-size-label").innerText = fontSizeLabels[currentFontSizeIdx];
     }
 
