@@ -67,16 +67,19 @@
       padding-bottom: 15px;
       border-bottom: 1px solid var(--border-color);
     }
+    /* 【要望1】赤字の巻タイトルを大きく！ */
     .volume-tag {
-      font-size: 0.8rem;
+      font-size: 1.35rem;
       color: var(--accent-red);
       font-weight: bold;
       letter-spacing: 2px;
+      margin-bottom: 6px;
     }
+    /* 【要望1】白字の章タイトルを控えめに逆転！ */
     .chapter-title {
-      font-size: 1.4rem;
-      color: #fff;
-      margin: 8px 0 10px;
+      font-size: 0.95rem;
+      color: #aaa;
+      margin: 0;
       letter-spacing: 1px;
     }
     .audio-card {
@@ -136,27 +139,54 @@
     }
     .view-content { display: none; }
     .view-content.active { display: block; }
-    .novel-body { font-size: 1.05rem; letter-spacing: 0.05em; }
-    .novel-body p { margin-bottom: 1.6em; text-indent: 1em; }
-    .novel-body p.no-indent { text-indent: 0; }
-    .novel-body .lead-box {
-      font-style: italic;
-      color: var(--accent-gold);
-      border-left: 3px solid var(--accent-gold);
-      padding-left: 12px;
-      margin-bottom: 25px;
-      text-indent: 0;
+
+    /* 小説本文エリア（改行・空行を100%そのまま維持） */
+    .novel-body {
+      font-size: 1.05rem;
+      letter-spacing: 0.05em;
     }
-    .novel-body .preview-box {
+    /* 【要望3・4】章タイトルを1段階大きく */
+    .novel-chapter-heading {
+      font-size: 1.3rem;
+      color: #fff;
+      font-weight: bold;
+      margin-bottom: 25px;
+      letter-spacing: 1px;
+    }
+    .novel-paragraph {
+      white-space: pre-wrap; /* さやかさんの改行・空行を完全に反映 */
+      margin-bottom: 1.5em;
+    }
+    /* 【要望2】00目次ページのセンタリング */
+    .novel-centered {
+      text-align: center;
+      white-space: pre-wrap;
+      color: var(--accent-gold);
+      font-weight: bold;
+      font-size: 1.15rem;
+      line-height: 2.3;
+      margin: 30px 0;
+    }
+    /* 赤枠ボックス（1巻次回予告 ＆ 2巻あおり） */
+    .preview-box {
       margin-top: 35px;
       padding: 18px;
       background: rgba(201, 42, 42, 0.05);
       border-left: 3px solid var(--accent-red);
-      font-size: 0.9rem;
-      color: #bbb;
-      text-indent: 0;
+      font-size: 0.92rem;
+      color: #ccc;
       white-space: pre-wrap;
     }
+    .lead-box {
+      margin-bottom: 30px;
+      padding: 18px;
+      background: rgba(201, 42, 42, 0.05);
+      border-left: 3px solid var(--accent-red);
+      font-size: 0.95rem;
+      color: var(--accent-gold);
+      white-space: pre-wrap;
+    }
+
     .lyrics-body {
       background: var(--panel-bg);
       border: 1px solid var(--border-color);
@@ -347,8 +377,9 @@
 
   <main>
     <div class="chapter-header">
-      <div class="volume-tag" id="vol-tag">SHADOWS SAGA</div>
-      <h1 class="chapter-title" id="chapter-title">目次</h1>
+      <!-- 【要望1】赤字の巻名を大きく、白字の章名を控えめに -->
+      <div class="volume-tag" id="vol-tag">第１巻：Dawn Beyond Shadows</div>
+      <h1 class="chapter-title" id="chapter-title">第１巻 もくじ</h1>
     </div>
 
     <div class="audio-card">
@@ -370,10 +401,6 @@
     <!-- 小説エリア -->
     <div class="view-content active" id="content-book">
       <article class="novel-body" id="novel-text"></article>
-      <div class="link-list-card" id="top-chapter-portal" style="display: none;">
-        <div class="link-list-header">📖 章一覧（タップで直接読む）</div>
-        <div class="link-grid" id="chapter-grid"></div>
-      </div>
       <div class="bottom-section" id="book-footer">
         <button class="btn-return-toc" id="btn-toc-target" onclick="returnToVolumeToc()">📑 目次に戻る</button>
       </div>
@@ -390,91 +417,92 @@
     </div>
   </main>
 
+  <!-- 【要望5】歌詞タブ時は「前の曲」「次の曲」に動的変化！ -->
   <div class="footer-nav">
     <button class="nav-btn" id="prev-btn" onclick="prevChapter()">← 前の章</button>
     <button class="nav-btn" id="next-btn" onclick="nextChapter()">次の章 →</button>
   </div>
 
   <script>
-    // ===== 全体インデックス定義（外部の .txt ファイルと紐付け） =====
+    // ===== 全体インデックス定義（全角「１」「２」表記に統一） =====
     const chapters = [
-      // ----------------- 第1巻 -----------------
-      { vol: "第1巻：Dawn Beyond Shadows", title: "第1巻 もくじ", song: "Dawn Beyond Shadows (OP#)", mp3: "https://files.catbox.moe/00u2y7.mp3", novelFile: "v1_00.txt", lyricFile: "v1_00.txt", isTop: true, topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "1# 黎明", song: "Ember!", mp3: "", novelFile: "v1_01.txt", lyricFile: "v1_01.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "2# 交戦", song: "Light of Resistance", mp3: "", novelFile: "v1_02.txt", lyricFile: "v1_02.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "3# 脅威", song: "Unstoppable Darkness", mp3: "", novelFile: "v1_03.txt", lyricFile: "v1_03.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "4# 紅白", song: "緋色の決戦 ~紅白メタル~", mp3: "", novelFile: "v1_04.txt", lyricFile: "v1_04.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "5# 策略", song: "漆黒のRondo", mp3: "", novelFile: "v1_05.txt", lyricFile: "v1_05.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "6# 闇堕", song: "Echoes of Tomorrow", mp3: "", novelFile: "v1_06.txt", lyricFile: "v1_06.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "7# 喪失", song: "Lost in the Shadow", mp3: "", novelFile: "v1_07.txt", lyricFile: "v1_07.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "8# 残滓", song: "静寂のムコウ", mp3: "", novelFile: "v1_08.txt", lyricFile: "v1_08.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "9# 奮起", song: "unreachable voice", mp3: "", novelFile: "v1_09.txt", lyricFile: "v1_09.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "10# 蛍丸", song: "影の円舞曲", mp3: "https://files.catbox.moe/phvkwp.mp3", novelFile: "v1_10.txt", lyricFile: "v1_10.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "11# 遭遇", song: "折りたたむ夜､ほどける朝｡", mp3: "", novelFile: "v1_11.txt", lyricFile: "v1_11.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "12# 歌声", song: "Awakening Voice", mp3: "", novelFile: "v1_12.txt", lyricFile: "v1_12.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "13# 絶叫", song: "Scream It Out !!", mp3: "", novelFile: "v1_13.txt", lyricFile: "v1_13.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "14# 舞踏", song: "Step Into the Beat!!", mp3: "", novelFile: "v1_14.txt", lyricFile: "v1_14.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "15# 折紙", song: "Wings of Peace ~平和の翼~", mp3: "", novelFile: "v1_15.txt", lyricFile: "v1_15.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "16# 共鳴", song: "「Lunar Eclipse」", mp3: "", novelFile: "v1_16.txt", lyricFile: "v1_16.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "17# 対峙", song: "滅びの序曲", mp3: "", novelFile: "v1_17.txt", lyricFile: "v1_17.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "18# 響鋼", song: "響､メタる！ ~響メタル~", mp3: "", novelFile: "v1_18.txt", lyricFile: "v1_18.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "19# 記憶", song: "Code of Hope ~すぅちゃん~", mp3: "", novelFile: "v1_19.txt", lyricFile: "v1_19.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "20# 業火", song: "Fading Light ~mark-metal~", mp3: "", novelFile: "v1_20.txt", lyricFile: "v1_20.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "21# 世界", song: "ルマンドＸのテーマ ~LUMONDE-X~", mp3: "", novelFile: "v1_21.txt", lyricFile: "v1_21.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "22# 決起", song: "RISE AGAIN", mp3: "", novelFile: "v1_22.txt", lyricFile: "v1_22.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "23# 武闘", song: "闇の爪 – Shadow’s Grip", mp3: "", novelFile: "v1_23.txt", lyricFile: "v1_23.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "24# 決着", song: "METAL Requiem", mp3: "", novelFile: "v1_24.txt", lyricFile: "v1_24.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "25# 再会", song: "- 影の王国 -", mp3: "", novelFile: "v1_25.txt", lyricFile: "v1_25.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "26# 影折", song: "影折 - Shadow's Wrath -", mp3: "", novelFile: "v1_26.txt", lyricFile: "v1_26.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "27# 舞闘", song: "Dancerble Fighter.", mp3: "", novelFile: "v1_27.txt", lyricFile: "v1_27.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "28# 音撃", song: "Beyond the Darkness", mp3: "", novelFile: "v1_28.txt", lyricFile: "v1_28.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "29# 光折", song: "光折 - Light of Resistance -", mp3: "", novelFile: "v1_29.txt", lyricFile: "v1_29.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "30# 昇華", song: "No Light,No Shadow", mp3: "", novelFile: "v1_30.txt", lyricFile: "v1_30.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "31# 由結", song: "Into the Light", mp3: "", novelFile: "v1_31.txt", lyricFile: "v1_31.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "32# 暁光", song: "暁 - アカツキ -", mp3: "", novelFile: "v1_32.txt", lyricFile: "v1_32.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "第1巻 Bonus 1", song: "LIGHT and SHADOW", mp3: "", novelFile: "v1_33.txt", lyricFile: "v1_33.txt", topIndex: 0 },
-      { vol: "第1巻：Dawn Beyond Shadows", title: "第1巻 Bonus 2", song: "SHINING LIGHT", mp3: "", novelFile: "v1_34.txt", lyricFile: "v1_34.txt", topIndex: 0 },
+      // ----------------- 第１巻 -----------------
+      { vol: "第１巻：Dawn Beyond Shadows", title: "第１巻 もくじ", song: "Dawn Beyond Shadows (OP#)", mp3: "https://files.catbox.moe/00u2y7.mp3", novelFile: "v1_00.txt", lyricFile: "v1_00.txt", isTop: true, topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "1# 黎明", song: "Ember!", mp3: "", novelFile: "v1_01.txt", lyricFile: "v1_01.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "2# 交戦", song: "Light of Resistance", mp3: "", novelFile: "v1_02.txt", lyricFile: "v1_02.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "3# 脅威", song: "Unstoppable Darkness", mp3: "", novelFile: "v1_03.txt", lyricFile: "v1_03.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "4# 紅白", song: "緋色の決戦 ~紅白メタル~", mp3: "", novelFile: "v1_04.txt", lyricFile: "v1_04.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "5# 策略", song: "漆黒のRondo", mp3: "", novelFile: "v1_05.txt", lyricFile: "v1_05.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "6# 闇堕", song: "Echoes of Tomorrow", mp3: "", novelFile: "v1_06.txt", lyricFile: "v1_06.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "7# 喪失", song: "Lost in the Shadow", mp3: "", novelFile: "v1_07.txt", lyricFile: "v1_07.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "8# 残滓", song: "静寂のムコウ", mp3: "", novelFile: "v1_08.txt", lyricFile: "v1_08.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "9# 奮起", song: "unreachable voice", mp3: "", novelFile: "v1_09.txt", lyricFile: "v1_09.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "10# 蛍丸", song: "影の円舞曲", mp3: "https://files.catbox.moe/phvkwp.mp3", novelFile: "v1_10.txt", lyricFile: "v1_10.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "11# 遭遇", song: "折りたたむ夜､ほどける朝｡", mp3: "", novelFile: "v1_11.txt", lyricFile: "v1_11.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "12# 歌声", song: "Awakening Voice", mp3: "", novelFile: "v1_12.txt", lyricFile: "v1_12.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "13# 絶叫", song: "Scream It Out !!", mp3: "", novelFile: "v1_13.txt", lyricFile: "v1_13.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "14# 舞踏", song: "Step Into the Beat!!", mp3: "", novelFile: "v1_14.txt", lyricFile: "v1_14.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "15# 折紙", song: "Wings of Peace ~平和の翼~", mp3: "", novelFile: "v1_15.txt", lyricFile: "v1_15.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "16# 共鳴", song: "「Lunar Eclipse」", mp3: "", novelFile: "v1_16.txt", lyricFile: "v1_16.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "17# 対峙", song: "滅びの序曲", mp3: "", novelFile: "v1_17.txt", lyricFile: "v1_17.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "18# 響鋼", song: "響､メタる！ ~響メタル~", mp3: "", novelFile: "v1_18.txt", lyricFile: "v1_18.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "19# 記憶", song: "Code of Hope ~すぅちゃん~", mp3: "", novelFile: "v1_19.txt", lyricFile: "v1_19.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "20# 業火", song: "Fading Light ~mark-metal~", mp3: "", novelFile: "v1_20.txt", lyricFile: "v1_20.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "21# 世界", song: "ルマンドＸのテーマ ~LUMONDE-X~", mp3: "", novelFile: "v1_21.txt", lyricFile: "v1_21.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "22# 決起", song: "RISE AGAIN", mp3: "", novelFile: "v1_22.txt", lyricFile: "v1_22.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "23# 武闘", song: "闇の爪 – Shadow’s Grip", mp3: "", novelFile: "v1_23.txt", lyricFile: "v1_23.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "24# 決着", song: "METAL Requiem", mp3: "", novelFile: "v1_24.txt", lyricFile: "v1_24.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "25# 再会", song: "- 影の王国 -", mp3: "", novelFile: "v1_25.txt", lyricFile: "v1_25.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "26# 影折", song: "影折 - Shadow's Wrath -", mp3: "", novelFile: "v1_26.txt", lyricFile: "v1_26.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "27# 舞闘", song: "Dancerble Fighter.", mp3: "", novelFile: "v1_27.txt", lyricFile: "v1_27.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "28# 音撃", song: "Beyond the Darkness", mp3: "", novelFile: "v1_28.txt", lyricFile: "v1_28.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "29# 光折", song: "光折 - Light of Resistance -", mp3: "", novelFile: "v1_29.txt", lyricFile: "v1_29.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "30# 昇華", song: "No Light,No Shadow", mp3: "", novelFile: "v1_30.txt", lyricFile: "v1_30.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "31# 由結", song: "Into the Light", mp3: "", novelFile: "v1_31.txt", lyricFile: "v1_31.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "32# 暁光", song: "暁 - アカツキ -", mp3: "", novelFile: "v1_32.txt", lyricFile: "v1_32.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "第１巻 Bonus 1", song: "LIGHT and SHADOW", mp3: "", novelFile: "v1_33.txt", lyricFile: "v1_33.txt", topIndex: 0 },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "第１巻 Bonus 2", song: "SHINING LIGHT", mp3: "", novelFile: "v1_34.txt", lyricFile: "v1_34.txt", topIndex: 0 },
 
-      // ----------------- 第2巻 -----------------
-      { vol: "第2巻：Shadows of Rebellion", title: "第2巻 もくじ", song: "Shadows of Rebellion (OP#)", mp3: "", novelFile: "v2_top.txt", lyricFile: "v2_top.txt", isTop: true, topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "0# 序章", song: "光と影のセンリツ", mp3: "", novelFile: "v2_00.txt", lyricFile: "v2_00.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "1# 再生", song: "Re:birth", mp3: "", novelFile: "v2_01.txt", lyricFile: "v2_01.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "2# 日常", song: "影の向こうで", mp3: "", novelFile: "v2_02.txt", lyricFile: "v2_02.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "3# 異変", song: "The Return of Shadows", mp3: "", novelFile: "v2_03.txt", lyricFile: "v2_03.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "4# 迎撃", song: "Seize the Future", mp3: "", novelFile: "v2_04.txt", lyricFile: "v2_04.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "5# 疑念", song: "Alter-Echo", mp3: "", novelFile: "v2_05.txt", lyricFile: "v2_05.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "6# 覚醒", song: "Fallen Anthem", mp3: "", novelFile: "v2_06.txt", lyricFile: "v2_06.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "7# 際会", song: "Into the Dark", mp3: "", novelFile: "v2_07.txt", lyricFile: "v2_07.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "8# 伝説", song: "新たなる伝説(ちから)を求めて", mp3: "", novelFile: "v2_08.txt", lyricFile: "v2_08.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "9# 宿場", song: "小江戸ろっく節。", mp3: "", novelFile: "v2_09.txt", lyricFile: "v2_09.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "10# 宿娘", song: "Fighter At inn", mp3: "", novelFile: "v2_10.txt", lyricFile: "v2_10.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "11# 露店", song: "銀の首飾り", mp3: "", novelFile: "v2_11.txt", lyricFile: "v2_11.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "12# 静夜", song: "Silent in the night…", mp3: "", novelFile: "v2_12.txt", lyricFile: "v2_12.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "13# 襲撃", song: "Shadow Braker", mp3: "", novelFile: "v2_13.txt", lyricFile: "v2_13.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "14# 加入", song: "「誓灯」", mp3: "", novelFile: "v2_14.txt", lyricFile: "v2_14.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "15# 険路", song: "Path ~道は険しくとも~", mp3: "", novelFile: "v2_15.txt", lyricFile: "v2_15.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "16# 試練", song: "RISE", mp3: "", novelFile: "v2_16.txt", lyricFile: "v2_16.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "17# 音響", song: "sound of revival", mp3: "", novelFile: "v2_17.txt", lyricFile: "v2_17.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "18# 受容", song: "Embrace-Darkness", mp3: "", novelFile: "v2_18.txt", lyricFile: "v2_18.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "19# 調和", song: "Resonance", mp3: "", novelFile: "v2_19.txt", lyricFile: "v2_19.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "20# 光奏", song: "Hold the Light.", mp3: "", novelFile: "v2_20.txt", lyricFile: "v2_20.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "21# 挑戦", song: "Strike! Fight!", mp3: "", novelFile: "v2_21.txt", lyricFile: "v2_21.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "22# 奏撃", song: "かなで", mp3: "", novelFile: "v2_22.txt", lyricFile: "v2_22.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "23# 撤退", song: "dark dissonance", mp3: "", novelFile: "v2_23.txt", lyricFile: "v2_23.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "24# 消沈", song: "憂いのmelody", mp3: "", novelFile: "v2_24.txt", lyricFile: "v2_24.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "25# 報告", song: "Crimson Echoes", mp3: "", novelFile: "v2_25.txt", lyricFile: "v2_25.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "26# 戦記", song: "the Legend ~THE LEGENDS~", mp3: "", novelFile: "v2_26.txt", lyricFile: "v2_26.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "27# 楽譜", song: "Harmonizing", mp3: "", novelFile: "v2_27.txt", lyricFile: "v2_27.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "28# 川越", song: "川越の風に", mp3: "", novelFile: "v2_28.txt", lyricFile: "v2_28.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "29# 説得", song: "como amigos", mp3: "", novelFile: "v2_29.txt", lyricFile: "v2_29.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "30# 決意", song: "Back to the Quest", mp3: "", novelFile: "v2_30.txt", lyricFile: "v2_30.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "31# 追撃", song: "Counterstrikes.", mp3: "", novelFile: "v2_31.txt", lyricFile: "v2_31.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "32# 決戦", song: "斬光の宴", mp3: "", novelFile: "v2_32.txt", lyricFile: "v2_32.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "33# 終焉", song: "The End of the Rebellion", mp3: "", novelFile: "v2_33.txt", lyricFile: "v2_33.txt", topIndex: 35 },
-      { vol: "第2巻：Shadows of Rebellion", title: "34# 光闇", song: "光を超え､影を見つめ｡", mp3: "", novelFile: "v2_34.txt", lyricFile: "v2_34.txt", topIndex: 35 },
+      // ----------------- 第２巻 -----------------
+      { vol: "第２巻：Shadows of Rebellion", title: "第２巻 もくじ", song: "Shadows of Rebellion (OP#)", mp3: "", novelFile: "v2_top.txt", lyricFile: "v2_top.txt", isTop: true, topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "0# 序章", song: "光と影のセンリツ", mp3: "", novelFile: "v2_00.txt", lyricFile: "v2_00.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "1# 再生", song: "Re:birth", mp3: "", novelFile: "v2_01.txt", lyricFile: "v2_01.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "2# 日常", song: "影の向こうで", mp3: "", novelFile: "v2_02.txt", lyricFile: "v2_02.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "3# 異変", song: "The Return of Shadows", mp3: "", novelFile: "v2_03.txt", lyricFile: "v2_03.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "4# 迎撃", song: "Seize the Future", mp3: "", novelFile: "v2_04.txt", lyricFile: "v2_04.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "5# 疑念", song: "Alter-Echo", mp3: "", novelFile: "v2_05.txt", lyricFile: "v2_05.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "6# 覚醒", song: "Fallen Anthem", mp3: "", novelFile: "v2_06.txt", lyricFile: "v2_06.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "7# 際会", song: "Into the Dark", mp3: "", novelFile: "v2_07.txt", lyricFile: "v2_07.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "8# 伝説", song: "新たなる伝説(ちから)を求めて", mp3: "", novelFile: "v2_08.txt", lyricFile: "v2_08.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "9# 宿場", song: "小江戸ろっく節。", mp3: "", novelFile: "v2_09.txt", lyricFile: "v2_09.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "10# 宿娘", song: "Fighter At inn", mp3: "", novelFile: "v2_10.txt", lyricFile: "v2_10.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "11# 露店", song: "銀の首飾り", mp3: "", novelFile: "v2_11.txt", lyricFile: "v2_11.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "12# 静夜", song: "Silent in the night…", mp3: "", novelFile: "v2_12.txt", lyricFile: "v2_12.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "13# 襲撃", song: "Shadow Braker", mp3: "", novelFile: "v2_13.txt", lyricFile: "v2_13.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "14# 加入", song: "「誓灯」", mp3: "", novelFile: "v2_14.txt", lyricFile: "v2_14.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "15# 険路", song: "Path ~道は険しくとも~", mp3: "", novelFile: "v2_15.txt", lyricFile: "v2_15.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "16# 試練", song: "RISE", mp3: "", novelFile: "v2_16.txt", lyricFile: "v2_16.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "17# 音響", song: "sound of revival", mp3: "", novelFile: "v2_17.txt", lyricFile: "v2_17.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "18# 受容", song: "Embrace-Darkness", mp3: "", novelFile: "v2_18.txt", lyricFile: "v2_18.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "19# 調和", song: "Resonance", mp3: "", novelFile: "v2_19.txt", lyricFile: "v2_19.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "20# 光奏", song: "Hold the Light.", mp3: "", novelFile: "v2_20.txt", lyricFile: "v2_20.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "21# 挑戦", song: "Strike! Fight!", mp3: "", novelFile: "v2_21.txt", lyricFile: "v2_21.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "22# 奏撃", song: "かなで", mp3: "", novelFile: "v2_22.txt", lyricFile: "v2_22.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "23# 撤退", song: "dark dissonance", mp3: "", novelFile: "v2_23.txt", lyricFile: "v2_23.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "24# 消沈", song: "憂いのmelody", mp3: "", novelFile: "v2_24.txt", lyricFile: "v2_24.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "25# 報告", song: "Crimson Echoes", mp3: "", novelFile: "v2_25.txt", lyricFile: "v2_25.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "26# 戦記", song: "the Legend ~THE LEGENDS~", mp3: "", novelFile: "v2_26.txt", lyricFile: "v2_26.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "27# 楽譜", song: "Harmonizing", mp3: "", novelFile: "v2_27.txt", lyricFile: "v2_27.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "28# 川越", song: "川越の風に", mp3: "", novelFile: "v2_28.txt", lyricFile: "v2_28.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "29# 説得", song: "como amigos", mp3: "", novelFile: "v2_29.txt", lyricFile: "v2_29.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "30# 決意", song: "Back to the Quest", mp3: "", novelFile: "v2_30.txt", lyricFile: "v2_30.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "31# 追撃", song: "Counterstrikes.", mp3: "", novelFile: "v2_31.txt", lyricFile: "v2_31.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "32# 決戦", song: "斬光の宴", mp3: "", novelFile: "v2_32.txt", lyricFile: "v2_32.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "33# 終焉", song: "The End of the Rebellion", mp3: "", novelFile: "v2_33.txt", lyricFile: "v2_33.txt", topIndex: 35 },
+      { vol: "第２巻：Shadows of Rebellion", title: "34# 光闇", song: "光を超え､影を見つめ｡", mp3: "", novelFile: "v2_34.txt", lyricFile: "v2_34.txt", topIndex: 35 },
       { 
-        vol: "第2巻：Shadows of Rebellion", 
-        title: "第2巻 おまけ", 
+        vol: "第２巻：Shadows of Rebellion", 
+        title: "第２巻 おまけ", 
         song: "Ash Bloom ~サヤメタ~", 
         mp3: "", 
         novelFile: "v2_omake.txt", 
@@ -498,57 +526,59 @@
     ];
 
     let currentIndex = 0;
+    let currentView = 'book'; // 'book' または 'lyric'
     const fontSizes = ["0.95rem", "1.05rem", "1.2rem"];
     const fontSizeLabels = ["小", "中", "大"];
     let currentFontSizeIdx = 1;
 
-    // テキストファイル自動パース（本文と次回予告、煽りを自動判定！）
-    function parseNovelText(rawText) {
+    // 【要望3・4】--- 区切りによる小説テキストの自動パース処理
+    function parseNovelText(rawText, ch) {
       if (!rawText) return "<p>（本文がありません）</p>";
-      let lines = rawText.split('\n');
-      let previewText = "";
-      let leadText = "";
-      let bodyLines = [];
-      let isPreview = false;
 
-      // 行ごとの自動判定
-      for (let i = 0; i < lines.length; i++) {
-        let line = lines[i].trim();
-        // もくじ・ナビなどの余計な行をスキップ
-        if (line.startsWith("もくじ") || line.includes("1/32") || line.startsWith("To Be Continued")) continue;
-        if (line.startsWith("____")) continue;
+      // 【要望2】00目次ページは煽りだけなのでセンタリング！
+      if (ch.isTop) {
+        return `<div class="novel-centered">${rawText.trim()}</div>`;
+      }
 
-        // 次回予告の検知
-        if (line.startsWith("次回") || line.startsWith("『暁光』") || line.startsWith("問題、響メタル") || line.startsWith("《予告モード")) {
-          isPreview = true;
-        }
+      // 「---」で分割（前後の空白行をトリム）
+      const parts = rawText.split(/\n\s*---\s*\n/);
 
-        if (isPreview) {
-          previewText += lines[i] + "\n";
-        } else if (bodyLines.length === 0 && (line.startsWith("光と闇の境界線") || line.startsWith("かつてない衝撃"))) {
-          leadText += line + "<br>";
-        } else {
-          bodyLines.push(lines[i]);
-        }
+      // 区切りがない場合は全体をそのまま改行維持で表示
+      if (parts.length < 2) {
+        return `<div class="novel-paragraph">${rawText.trim()}</div>`;
       }
 
       let html = "";
-      if (leadText) html += `<div class="lead-box">${leadText}</div>`;
-      
-      let bodyText = bodyLines.join("\n").trim();
-      let paragraphs = bodyText.split(/\n\s*\n/);
-      paragraphs.forEach(p => {
-        let clean = p.trim().replace(/\n/g, "<br>");
-        if (clean) html += `<p>${clean}</p>`;
-      });
+      const isVol2 = ch.vol.includes("第２巻");
 
-      if (previewText.trim()) {
-        html += `<div class="preview-box">${previewText.trim()}</div>`;
+      // 【第1巻のパース：[0]タイトル --- [1]本文 --- [2]次回予告】
+      if (!isVol2) {
+        if (parts[0] && parts[0].trim()) {
+          html += `<div class="novel-chapter-heading">${parts[0].trim()}</div>`;
+        }
+        if (parts[1] && parts[1].trim()) {
+          html += `<div class="novel-paragraph">${parts[1].trim()}</div>`;
+        }
+        if (parts[2] && parts[2].trim()) {
+          html += `<div class="preview-box">${parts[2].trim()}</div>`;
+        }
+      } 
+      // 【第2巻のパース：[0]タイトル --- [1]各章あおり --- [2]本文】
+      else {
+        if (parts[0] && parts[0].trim()) {
+          html += `<div class="novel-chapter-heading">${parts[0].trim()}</div>`;
+        }
+        if (parts[1] && parts[1].trim()) {
+          html += `<div class="lead-box">${parts[1].trim()}</div>`;
+        }
+        if (parts[2] && parts[2].trim()) {
+          html += `<div class="novel-paragraph">${parts[2].trim()}</div>`;
+        }
       }
+
       return html;
     }
 
-    // 外部テキストファイルを読み込む共通関数
     async function fetchText(path) {
       try {
         const res = await fetch(path);
@@ -559,7 +589,7 @@
       }
     }
 
-    // アコーディオン目次の生成
+    // アコーディオン目次（巻ごとに開閉）
     function renderAccordionToc() {
       const container = document.getElementById("accordion-toc");
       container.innerHTML = "";
@@ -576,7 +606,6 @@
         
         const content = document.createElement("ul");
         content.className = "accordion-content";
-        // 現在の巻は最初から開いておく
         if (chapters[currentIndex].vol === volName) {
           content.classList.add("open");
           header.querySelector("span:first-child").innerText = `▼ ${volName}`;
@@ -600,7 +629,7 @@
       });
     }
 
-    // 曲目リスト生成（その巻の曲一覧）
+    // 曲目リスト
     function renderTrackGrid() {
       const grid = document.getElementById("track-grid");
       grid.innerHTML = "";
@@ -617,24 +646,7 @@
       });
     }
 
-    // 目次用：全章ジャンプボタングリッド
-    function renderChapterGrid() {
-      const grid = document.getElementById("chapter-grid");
-      grid.innerHTML = "";
-      const currentVol = chapters[currentIndex].vol;
-
-      chapters.forEach((ch, idx) => {
-        if (ch.vol === currentVol && !ch.isTop) {
-          const btn = document.createElement("div");
-          btn.className = "link-item-btn";
-          btn.onclick = () => { loadChapter(idx); switchView('book'); };
-          btn.innerHTML = `<span>${ch.title}</span><span style="font-size:0.75rem;color:var(--accent-gold);">読む →</span>`;
-          grid.appendChild(btn);
-        }
-      });
-    }
-
-    // おまけ曲セレクター生成
+    // おまけ曲セレクター
     function renderOmakeSelector(ch) {
       const selector = document.getElementById("omake-selector");
       selector.innerHTML = "";
@@ -659,7 +671,20 @@
       });
     }
 
-    // 章の読み込み（外部ファイルをfetch！）
+    // 【要望5】フッターナビの文言更新（小説＝前の章/次の章、歌詞＝前の曲/次の曲）
+    function updateFooterNavLabels() {
+      const prevBtn = document.getElementById("prev-btn");
+      const nextBtn = document.getElementById("next-btn");
+      if (currentView === 'book') {
+        prevBtn.innerText = "← 前の章";
+        nextBtn.innerText = "次の章 →";
+      } else {
+        prevBtn.innerText = "← 前の曲";
+        nextBtn.innerText = "次の曲 →";
+      }
+    }
+
+    // 章の読み込み
     async function loadChapter(index) {
       currentIndex = index;
       const ch = chapters[index];
@@ -681,12 +706,12 @@
         status.innerText = "（🎵 音源準備中）";
       }
 
-      // 小説本文を外部から読み込んで自動パース
+      // 小説本文読み込み ＆ 自動パース
       document.getElementById("novel-text").innerHTML = "<p>読み込み中...</p>";
       const rawNovel = await fetchText("novel/" + ch.novelFile);
-      document.getElementById("novel-text").innerHTML = parseNovelText(rawNovel);
+      document.getElementById("novel-text").innerHTML = parseNovelText(rawNovel, ch);
 
-      // 歌詞を外部から読み込み
+      // 歌詞読み込み
       if (ch.isOmake) {
         renderOmakeSelector(ch);
         const firstOmake = await fetchText("lyrics/" + ch.omakeTracks[0].file);
@@ -698,18 +723,13 @@
         document.getElementById("lyrics-text").innerText = rawLyric;
       }
 
-      // トップ目次画面の制御
-      if (ch.isTop) {
-        document.getElementById("top-chapter-portal").style.display = "block";
-        document.getElementById("book-footer").style.display = "none";
-        renderChapterGrid();
-      } else {
-        document.getElementById("top-chapter-portal").style.display = "none";
-        document.getElementById("book-footer").style.display = "block";
-      }
+      // 目次ボタンの表示制御（00目次のときは隠す）
+      document.getElementById("book-footer").style.display = ch.isTop ? "none" : "block";
 
       renderTrackGrid();
-      switchView('book');
+      
+      // 現在のタブ状態を維持して表示
+      switchView(currentView);
 
       document.getElementById("prev-btn").disabled = (currentIndex === 0);
       document.getElementById("next-btn").disabled = (currentIndex === chapters.length - 1);
@@ -717,16 +737,18 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    // 目次に戻る（その巻のトップへ）
     function returnToVolumeToc() {
       loadChapter(chapters[currentIndex].topIndex || 0);
     }
 
+    // タブ切り替え（ボタン表示も連動！）
     function switchView(type) {
+      currentView = type;
       document.getElementById("tab-book").classList.toggle("active", type === 'book');
       document.getElementById("tab-lyric").classList.toggle("active", type === 'lyric');
       document.getElementById("content-book").classList.toggle("active", type === 'book');
       document.getElementById("content-lyric").classList.toggle("active", type === 'lyric');
+      updateFooterNavLabels();
     }
 
     function prevChapter() { if (currentIndex > 0) loadChapter(currentIndex - 1); }
