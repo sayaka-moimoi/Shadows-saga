@@ -63,7 +63,6 @@
       margin: 0 auto;
       padding: 20px 16px 100px;
     }
-    /* 【確定仕様】上部は全ページ共通で「赤字の巻タイトル」のみ！章名は完全削除 */
     .chapter-header {
       text-align: center;
       margin-bottom: 25px;
@@ -137,83 +136,45 @@
     .view-content { display: none; }
     .view-content.active { display: block; }
 
-    /* 小説エリア */
-    .novel-body {
+    /* ===== 自由レイアウト用スタイル定義 ===== */
+    .novel-body, .lyrics-body {
       font-size: 1.05rem;
       letter-spacing: 0.05em;
     }
-    /* 【確定仕様】小説の章タイトル：黄色（ゴールド）で大きく！ */
-    .novel-chapter-heading {
-      font-size: 1.35rem;
+    /* 全共通：改行・空行を100%完全維持 */
+    .block-base {
+      white-space: pre-wrap;
+      margin-bottom: 25px;
+      line-height: 2.1;
+    }
+    /* 色・スタイル */
+    .style-gold {
       color: var(--accent-gold);
       font-weight: bold;
-      margin-bottom: 25px;
-      letter-spacing: 1px;
+      font-size: 1.3rem; /* タイトル等 */
     }
-    /* 本文：さやかさんの改行・空行を100%完全維持（白文字） */
-    .novel-paragraph {
-      white-space: pre-wrap;
+    .style-white {
       color: var(--text-color);
-      margin-bottom: 1.5em;
+      font-size: 1.05rem; /* 本文等 */
     }
-    /* 目次トップ：プロローグ詩（白文字・センタリング） */
-    .novel-centered {
-      text-align: center;
-      white-space: pre-wrap;
-      color: var(--text-color);
-      font-size: 1.05rem;
-      line-height: 2.3;
-      margin: 25px 0 35px;
-    }
-    /* 赤枠ボックス（次回予告 ＆ 2巻あおり） */
-    .preview-box {
-      margin-top: 35px;
-      padding: 18px;
+    .style-redbox {
       background: rgba(201, 42, 42, 0.05);
       border-left: 3px solid var(--accent-red);
+      padding: 18px;
       font-size: 0.92rem;
-      text-align: center;
-      white-space: pre-wrap;
-      color: var(--text-color);
+      color: #ccc;
     }
-    .lead-box {
-      margin-bottom: 30px;
-      padding: 18px;
-      background: rgba(201, 42, 42, 0.05);
-      border-left: 3px solid var(--accent-red);
-      font-size: 0.95rem;
-      color: var(--accent-gold);
-      white-space: pre-wrap;
-    }
+    /* 配置 */
+    .align-left { text-align: left; }
+    .align-center { text-align: center; }
+    .align-right { text-align: right; }
 
-    /* 歌詞エリア */
+    /* 歌詞表示コンテナ */
     .lyrics-body {
       background: var(--panel-bg);
       border: 1px solid var(--border-color);
       border-radius: 6px;
       padding: 25px 16px;
-      font-size: 1rem;
-      line-height: 2.2;
-      color: #ccc;
-      text-align: center;
-    }
-    .lyric-card-label {
-      font-size: 0.85rem;
-      color: #888;
-      margin-bottom: 8px;
-    }
-    /* 【確定仕様】曲タイトル：黄色（ゴールド） */
-    .lyric-song-title {
-      font-size: 1.3rem;
-      color: var(--accent-gold);
-      font-weight: bold;
-      margin-bottom: 20px;
-      letter-spacing: 1px;
-    }
-    .lyric-main-text {
-      white-space: pre-wrap;
-      font-size: 1rem;
-      line-height: 2.2;
     }
 
     .omake-selector {
@@ -394,7 +355,7 @@
   </aside>
 
   <main>
-    <!-- 【確定仕様】上部は「赤字の巻タイトル」のみ常時表示 -->
+    <!-- 上部は赤字の巻名のみ常時固定 -->
     <div class="chapter-header">
       <div class="volume-tag" id="vol-tag">第１巻：Dawn Beyond Shadows</div>
     </div>
@@ -418,7 +379,7 @@
     <!-- 小説エリア -->
     <div class="view-content active" id="content-book">
       <article class="novel-body" id="novel-text"></article>
-      <!-- 目次ページ時：プロローグ詩の直下に章一覧リンク復活！ -->
+      <!-- 目次ページ時：プロローグ詩の直下に章一覧リンク -->
       <div class="link-list-card" id="top-chapter-portal" style="display: none;">
         <div class="link-list-header">📖 章一覧（タップで直接読む）</div>
         <div class="link-grid" id="chapter-grid"></div>
@@ -439,7 +400,6 @@
     </div>
   </main>
 
-  <!-- フッターナビ（歌詞時は前の曲/次の曲へ変化） -->
   <div class="footer-nav">
     <button class="nav-btn" id="prev-btn" onclick="prevChapter()">← 前の章</button>
     <button class="nav-btn" id="next-btn" onclick="nextChapter()">次の章 →</button>
@@ -553,48 +513,55 @@
     const fontSizeLabels = ["小", "中", "大"];
     let currentFontSizeIdx = 1;
 
-    // 小説パース処理
-    function parseNovelText(rawText, ch) {
-      if (!rawText) return "<p>（本文がありません）</p>";
+    // ===== 【神機能】独自タグパーサー（黄/白/赤枠 × 左/中/右） =====
+    function parseCustomMarkup(rawText, defaultAlign = "align-left") {
+      if (!rawText) return "<p>（内容がありません）</p>";
 
-      // 目次ページ：白文字でセンタリング！
-      if (ch.isTop) {
-        return `<div class="novel-centered">${rawText.trim()}</div>`;
-      }
-
-      const parts = rawText.split(/\n\s*---\s*\n/);
-      if (parts.length < 2) {
-        return `<div class="novel-paragraph">${rawText.trim()}</div>`;
-      }
-
+      // 行頭の「---」でブロック分割
+      const rawBlocks = rawText.split(/\n(?=---)/);
       let html = "";
-      const isVol2 = ch.vol.includes("第２巻");
 
-      // 【確定仕様】章タイトルは黄色（ゴールド）！
-      if (!isVol2) {
-        if (parts[0] && parts[0].trim()) html += `<div class="novel-chapter-heading">${parts[0].trim()}</div>`;
-        if (parts[1] && parts[1].trim()) html += `<div class="novel-paragraph">${parts[1].trim()}</div>`;
-        if (parts[2] && parts[2].trim()) html += `<div class="preview-box">${parts[2].trim()}</div>`;
-      } else {
-        if (parts[0] && parts[0].trim()) html += `<div class="novel-chapter-heading">${parts[0].trim()}</div>`;
-        if (parts[1] && parts[1].trim()) html += `<div class="lead-box">${parts[1].trim()}</div>`;
-        if (parts[2] && parts[2].trim()) html += `<div class="novel-paragraph">${parts[2].trim()}</div>`;
-      }
-      return html;
-    }
+      rawBlocks.forEach((rawBlock, idx) => {
+        let text = rawBlock.trim();
+        if (!text) return;
 
-    // 歌詞パース処理
-    function parseLyricText(rawText) {
-      if (!rawText) return "（歌詞がありません）";
-      const parts = rawText.split(/\n\s*---\s*\n/);
-      if (parts.length < 2) {
-        return `<div class="lyric-main-text">${rawText.trim()}</div>`;
-      }
-      let html = "";
-      if (parts[0] && parts[0].trim()) html += `<div class="lyric-card-label">${parts[0].trim()}</div>`;
-      // 【確定仕様】曲タイトルは黄色（ゴールド）！
-      if (parts[1] && parts[1].trim()) html += `<div class="lyric-song-title">${parts[1].trim()}</div>`;
-      if (parts[2] && parts[2].trim()) html += `<div class="lyric-main-text">${parts[2].trim()}</div>`;
+        let styleClass = "style-white";
+        let alignClass = defaultAlign;
+
+        // タグ行があるかチェック
+        if (text.startsWith("---")) {
+          const firstLineEnd = text.indexOf("\n");
+          const tagLine = (firstLineEnd !== -1) ? text.substring(0, firstLineEnd) : text;
+          text = (firstLineEnd !== -1) ? text.substring(firstLineEnd + 1).trim() : "";
+
+          // 色・枠判定
+          if (tagLine.includes("赤枠")) {
+            styleClass = "style-redbox";
+          } else if (tagLine.includes("黄") || tagLine.includes("タイトル")) {
+            styleClass = "style-gold";
+          } else {
+            styleClass = "style-white";
+          }
+
+          // 配置判定
+          if (tagLine.includes("中") || tagLine.includes("センタリング") || tagLine.includes("中央")) {
+            alignClass = "align-center";
+          } else if (tagLine.includes("右")) {
+            alignClass = "align-right";
+          } else if (tagLine.includes("左")) {
+            alignClass = "align-left";
+          }
+        } else {
+          // タグなしの場合の自動デフォルト振り分け
+          if (idx === 0) styleClass = "style-gold"; // 1ブロック目はタイトル風
+          else styleClass = "style-white";
+        }
+
+        if (text) {
+          html += `<div class="block-base ${styleClass} ${alignClass}">${text}</div>`;
+        }
+      });
+
       return html;
     }
 
@@ -698,7 +665,7 @@
           btn.classList.add("active");
           document.getElementById("song-name").innerText = track.name;
           const lyrics = await fetchText("lyrics/" + track.file);
-          document.getElementById("lyrics-text").innerHTML = parseLyricText(lyrics);
+          document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(lyrics, "align-center");
         };
         selector.appendChild(btn);
       });
@@ -720,7 +687,7 @@
       currentIndex = index;
       const ch = chapters[index];
 
-      // 【確定仕様】上部は全ページ共通で「赤字の巻タイトル」のみ！
+      // 上部は赤字の巻名のみ常時表示
       document.getElementById("vol-tag").innerText = ch.vol;
       document.getElementById("song-name").innerText = ch.song;
       
@@ -737,21 +704,21 @@
         status.innerText = "（🎵 音源準備中）";
       }
 
-      // 小説本文読み込み
+      // 小説本文読み込み（独自タグパーサーを通す）
       document.getElementById("novel-text").innerHTML = "<p>読み込み中...</p>";
       const rawNovel = await fetchText("novel/" + ch.novelFile);
-      document.getElementById("novel-text").innerHTML = parseNovelText(rawNovel, ch);
+      document.getElementById("novel-text").innerHTML = parseCustomMarkup(rawNovel, "align-left");
 
-      // 歌詞読み込み
+      // 歌詞読み込み（独自タグパーサーを通す：デフォルト中央揃え）
       if (ch.isOmake) {
         renderOmakeSelector(ch);
         const firstOmake = await fetchText("lyrics/" + ch.omakeTracks[0].file);
-        document.getElementById("lyrics-text").innerHTML = parseLyricText(firstOmake);
+        document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(firstOmake, "align-center");
       } else {
         document.getElementById("omake-selector").style.display = "none";
         document.getElementById("lyrics-text").innerText = "読み込み中...";
         const rawLyric = await fetchText("lyrics/" + ch.lyricFile);
-        document.getElementById("lyrics-text").innerHTML = parseLyricText(rawLyric);
+        document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(rawLyric, "align-center");
       }
 
       // 目次ページのときは章一覧ボタンを表示、各章では目次に戻るボタンを表示
