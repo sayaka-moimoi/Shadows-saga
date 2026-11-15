@@ -380,10 +380,34 @@
     <div class="view-content active" id="content-book">
       <article class="novel-body" id="novel-text"></article>
       <!-- 目次ページ時：プロローグ詩の直下に章一覧リンク -->
-      <div class="link-list-card" id="top-chapter-portal" style="display: none;">
-        <div class="link-list-header">📖 章一覧（タップで直接読む）</div>
-        <div class="link-grid" id="chapter-grid"></div>
-      </div>
+function renderTrackGrid() {
+  const grid = document.getElementById("track-grid");
+  grid.innerHTML = "";
+  const currentVol = chapters[currentIndex].vol;
+
+  // 巻ごとにタイトルを変える
+  let listTitle = "💿 収録曲リスト（タップで移動）";
+  if (currentVol.includes("第１巻") || currentVol.includes("第1巻")) {
+    listTitle = "💿 第1巻 収録曲リスト";
+  } else if (currentVol.includes("第２巻") || currentVol.includes("第2巻")) {
+    listTitle = "💿 第2巻 収録曲リスト";
+  } else if (currentVol.includes("おまけ")) {
+    listTitle = "💿 おまけ曲リスト";
+  }
+
+  // タイトルを更新
+  document.querySelector("#tracklist-container .link-list-header").innerText = listTitle;
+
+  chapters.forEach((ch, idx) => {
+    if (ch.vol === currentVol) {
+      const btn = document.createElement("div");
+      btn.className = "link-item-btn" + (idx === currentIndex ? " current" : "");
+      btn.onclick = () => { loadChapter(idx); switchView('lyric'); };
+      btn.innerHTML = `<span>🎵 \( {ch.song}</span><span style="font-size:0.75rem;color:#888;"> \){ch.title.split(' ')[0]}</span>`;
+      grid.appendChild(btn);
+    }
+  });
+}
       <div class="bottom-section" id="book-footer">
         <button class="btn-return-toc" id="btn-toc-target" onclick="returnToVolumeToc()">📑 目次に戻る</button>
       </div>
