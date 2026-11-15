@@ -1,7 +1,7 @@
-1.Dawn Beyond Shadows
 歌詞カード
-Dawn Beyond Shadows ~暁の彼方へ~
-
+---
+Dawn Beyond Shadows
+---
 灰の中から目覚め 鎖を断ち切れ
 炎の中で 運命を刻む
 闇の彼方から 呼ぶ声が
@@ -40,12 +40,3 @@ This is our destiny！
 
 Dawn beyond shadows, 
 This is our destiny！
-次曲
-
-曲一覧
-
-小説
-→Dawn Beyond Shadows ~暁の彼方へ~
-次作
-→Shadows of Rebellion ~影の逆襲~
-
