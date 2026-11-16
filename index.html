@@ -619,11 +619,13 @@
       const currentGroup = getAlbumGroup(chapters[currentIndex].vol);
 
       if (currentGroup === "vol1") {
-        header.innerHTML = "💿 ファーストアルバム：Dawn Beyond Shadows（タップで移動）";
+        header.innerHTML = "💿 ファーストアルバム
+          Dawn Beyond Shadows";
       } else if (currentGroup === "vol2") {
-        header.innerHTML = "💿 セカンドアルバム：Shadows of Rebellion（タップで移動）";
+        header.innerHTML = "💿 セカンドアルバム
+          Shadows of Rebellion";
       } else {
-        header.innerHTML = "💿 収録曲リスト（タップで移動）";
+        header.innerHTML = "💿 収録曲リスト";
       }
 
       chapters.forEach((ch, idx) => {
