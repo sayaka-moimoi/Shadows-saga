@@ -136,26 +136,23 @@
     .view-content { display: none; }
     .view-content.active { display: block; }
 
-    /* ===== 自由レイアウト用スタイル定義 ===== */
     .novel-body, .lyrics-body {
       font-size: 0.8rem;
       letter-spacing: 0.05em;
     }
-    /* 全共通：改行・空行を100%完全維持 */
     .block-base {
       white-space: pre-wrap;
       margin-bottom: 25px;
       line-height: 2.1;
     }
-    /* 色・スタイル */
     .style-gold {
       color: var(--accent-gold);
       font-weight: bold;
-      font-size: 1.5em; /* タイトル等 */
+      font-size: 1.5em;
     }
     .style-white {
       color: var(--text-color);
-      font-size: 1.0em; /* 本文等 */
+      font-size: 1.0em;
     }
     .style-redbox {
       background: rgba(201, 42, 42, 0.05);
@@ -164,12 +161,10 @@
       font-size: 0.9em;
       color: #ccc;
     }
-    /* 配置 */
     .align-left { text-align: left; }
     .align-center { text-align: center; }
     .align-right { text-align: right; }
 
-    /* 歌詞表示コンテナ */
     .lyrics-body {
       background: var(--panel-bg);
       border: 1px solid var(--border-color);
@@ -338,7 +333,8 @@
 <body>
 
   <header>
-    <div class="brand-title" onclick="loadChapter(0)">Shdows:SAGA</div>
+    <!-- タイポ修正：Shadows:SAGA -->
+    <div class="brand-title" onclick="loadChapter(0)">Shadows:SAGA</div>
     <div class="header-controls">
       <button class="btn-icon" onclick="toggleFontSize()">文字: <span id="font-size-label">中</span></button>
       <button class="btn-icon" onclick="toggleSidebar()">目次 ☰</button>
@@ -355,7 +351,6 @@
   </aside>
 
   <main>
-    <!-- 上部は赤字の巻名のみ常時固定 -->
     <div class="chapter-header">
       <div class="volume-tag" id="vol-tag">第１巻：Dawn Beyond Shadows</div>
     </div>
@@ -379,7 +374,6 @@
     <!-- 小説エリア -->
     <div class="view-content active" id="content-book">
       <article class="novel-body" id="novel-text"></article>
-      <!-- 目次ページ時：プロローグ詩の直下に章一覧リンク -->
       <div class="link-list-card" id="top-chapter-portal" style="display: none;">
         <div class="link-list-header">📖 -もくじ-（タップで直接読む）</div>
         <div class="link-grid" id="chapter-grid"></div>
@@ -394,7 +388,8 @@
       <div class="omake-selector" id="omake-selector" style="display: none;"></div>
       <div class="lyrics-body" id="lyrics-text"></div>
       <div class="link-list-card" id="tracklist-container">
-        <div class="link-list-header" style="color: var(--accent-red);">💿 アルバム（タップで移動）</div>
+        <!-- 【動的ヘッダー】第1巻/第2巻で文字が自動変化！ -->
+        <div class="link-list-header" id="tracklist-header" style="color: var(--accent-red);">💿 アルバム（タップで移動）</div>
         <div class="link-grid" id="track-grid"></div>
       </div>
     </div>
@@ -486,7 +481,7 @@
         vol: "第２巻：おまけ", 
         title: "第２巻 おまけ", 
         song: "37.‐縁‐", 
-        mp3: "", 
+        mp3: "BGM/2-37.- 縁 -.mp3", 
         novelFile: "v2_omake.txt", 
         isOmake: true, 
         topIndex: 35,
@@ -513,11 +508,17 @@
     const fontSizeLabels = ["小", "中", "大"];
     let currentFontSizeIdx = 1;
 
-    // ===== 【神機能】独自タグパーサー（黄/白/赤枠 × 左/中/右） =====
+    // 所属アルバムを賢くグループ判定
+    function getAlbumGroup(vol) {
+      if (vol.includes("第１巻")) return "vol1";
+      if (vol.includes("第２巻")) return "vol2";
+      return "other";
+    }
+
+    // 独自タグパーサー
     function parseCustomMarkup(rawText, defaultAlign = "align-left") {
       if (!rawText) return "<p>（内容がありません）</p>";
 
-      // 行頭の「---」でブロック分割
       const rawBlocks = rawText.split(/\n(?=---)/);
       let html = "";
 
@@ -528,13 +529,11 @@
         let styleClass = "style-white";
         let alignClass = defaultAlign;
 
-        // タグ行があるかチェック
         if (text.startsWith("---")) {
           const firstLineEnd = text.indexOf("\n");
           const tagLine = (firstLineEnd !== -1) ? text.substring(0, firstLineEnd) : text;
           text = (firstLineEnd !== -1) ? text.substring(firstLineEnd + 1).trim() : "";
 
-          // 色・枠判定
           if (tagLine.includes("赤枠")) {
             styleClass = "style-redbox";
           } else if (tagLine.includes("黄") || tagLine.includes("タイトル")) {
@@ -543,7 +542,6 @@
             styleClass = "style-white";
           }
 
-          // 配置判定
           if (tagLine.includes("中") || tagLine.includes("センタリング") || tagLine.includes("中央")) {
             alignClass = "align-center";
           } else if (tagLine.includes("右")) {
@@ -552,8 +550,7 @@
             alignClass = "align-left";
           }
         } else {
-          // タグなしの場合の自動デフォルト振り分け
-          if (idx === 0) styleClass = "style-gold"; // 1ブロック目はタイトル風
+          if (idx === 0) styleClass = "style-gold";
           else styleClass = "style-white";
         }
 
@@ -614,13 +611,23 @@
       });
     }
 
+    // 【修正要件】アルバム名ヘッダーの動的切り替え＆グループ判定
     function renderTrackGrid() {
       const grid = document.getElementById("track-grid");
+      const header = document.getElementById("tracklist-header");
       grid.innerHTML = "";
-      const currentVol = chapters[currentIndex].vol;
+      const currentGroup = getAlbumGroup(chapters[currentIndex].vol);
+
+      if (currentGroup === "vol1") {
+        header.innerHTML = "💿 ファーストアルバム：Dawn Beyond Shadows（タップで移動）";
+      } else if (currentGroup === "vol2") {
+        header.innerHTML = "💿 セカンドアルバム：Shadows of Rebellion（タップで移動）";
+      } else {
+        header.innerHTML = "💿 収録曲リスト（タップで移動）";
+      }
 
       chapters.forEach((ch, idx) => {
-        if (ch.vol === currentVol) {
+        if (getAlbumGroup(ch.vol) === currentGroup) {
           const btn = document.createElement("div");
           btn.className = "link-item-btn" + (idx === currentIndex ? " current" : "");
           btn.onclick = () => { loadChapter(idx); switchView('lyric'); };
@@ -634,10 +641,10 @@
     function renderChapterGrid() {
       const grid = document.getElementById("chapter-grid");
       grid.innerHTML = "";
-      const currentVol = chapters[currentIndex].vol;
+      const currentGroup = getAlbumGroup(chapters[currentIndex].vol);
 
       chapters.forEach((ch, idx) => {
-        if (ch.vol === currentVol && !ch.isTop) {
+        if (getAlbumGroup(ch.vol) === currentGroup && !ch.isTop) {
           const btn = document.createElement("div");
           btn.className = "link-item-btn";
           btn.onclick = () => { loadChapter(idx); switchView('book'); };
@@ -647,6 +654,7 @@
       });
     }
 
+    // 【修正要件】おまけ曲タップ時にBGM音源も一緒にパッと切り替え！
     function renderOmakeSelector(ch) {
       const selector = document.getElementById("omake-selector");
       selector.innerHTML = "";
@@ -664,6 +672,21 @@
           document.querySelectorAll(".omake-btn").forEach(b => b.classList.remove("active"));
           btn.classList.add("active");
           document.getElementById("song-name").innerText = track.name;
+          
+          // ★BGMプレイヤーの音源も切り替え！
+          const player = document.getElementById("audio-player");
+          const status = document.getElementById("audio-status");
+          if (track.mp3 && track.mp3.trim() !== "") {
+            player.src = track.mp3;
+            player.style.display = "block";
+            status.innerText = "";
+            player.load();
+          } else {
+            player.removeAttribute("src");
+            player.style.display = "none";
+            status.innerText = "（🎵 音源準備中）";
+          }
+
           const lyrics = await fetchText("lyrics/" + track.file);
           document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(lyrics, "align-center");
         };
@@ -687,14 +710,16 @@
       currentIndex = index;
       const ch = chapters[index];
 
-      // 上部は赤字の巻名のみ常時表示
       document.getElementById("vol-tag").innerText = ch.vol;
       document.getElementById("song-name").innerText = ch.song;
       
       const player = document.getElementById("audio-player");
       const status = document.getElementById("audio-status");
-      if (ch.mp3 && ch.mp3.trim() !== "") {
-        player.src = ch.mp3;
+      
+      // BGM設定
+      const currentMp3 = (ch.isOmake && ch.omakeTracks) ? ch.omakeTracks[0].mp3 : ch.mp3;
+      if (currentMp3 && currentMp3.trim() !== "") {
+        player.src = currentMp3;
         player.style.display = "block";
         status.innerText = "";
       } else {
@@ -704,14 +729,15 @@
         status.innerText = "（🎵 音源準備中）";
       }
 
-      // 小説本文読み込み（独自タグパーサーを通す）
+      // 小説本文読み込み
       document.getElementById("novel-text").innerHTML = "<p>読み込み中...</p>";
       const rawNovel = await fetchText("novel/" + ch.novelFile);
       document.getElementById("novel-text").innerHTML = parseCustomMarkup(rawNovel, "align-left");
 
-      // 歌詞読み込み（独自タグパーサーを通す：デフォルト中央揃え）
+      // 歌詞読み込み
       if (ch.isOmake) {
         renderOmakeSelector(ch);
+        document.getElementById("song-name").innerText = ch.omakeTracks[0].name;
         const firstOmake = await fetchText("lyrics/" + ch.omakeTracks[0].file);
         document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(firstOmake, "align-center");
       } else {
