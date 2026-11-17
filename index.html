@@ -136,8 +136,9 @@
     .view-content { display: none; }
     .view-content.active { display: block; }
 
+    /* 【改修】標準（中）のフォントサイズを 1.0rem に設定 */
     .novel-body, .lyrics-body {
-      font-size: 0.8rem;
+      font-size: 1.0rem;
       letter-spacing: 0.05em;
     }
     .block-base {
@@ -502,9 +503,11 @@
     ];
 
     let currentIndex = 0;
-    let currentOmakeIndex = 0; // 選択中のおまけ曲インデックス
+    let currentOmakeIndex = 0;
     let currentView = 'book';
-    const fontSizes = ["0.5rem", "0.8rem", "1.2rem"];
+
+    // 【改修】小: 0.8rem / 中: 1.0rem / 大: 1.2rem
+    const fontSizes = ["0.8rem", "1.0rem", "1.2rem"];
     const fontSizeLabels = ["小", "中", "大"];
     let currentFontSizeIdx = 1;
 
@@ -514,15 +517,17 @@
       return "other";
     }
 
+    // 【改修】末尾の改行（空行）を一切削らず、そのまま維持するパーサー！
     function parseCustomMarkup(rawText, defaultAlign = "align-left") {
       if (!rawText) return "<p>（内容がありません）</p>";
 
+      // 行頭の「---」でブロック分割
       const rawBlocks = rawText.split(/\n(?=---)/);
       let html = "";
 
       rawBlocks.forEach((rawBlock, idx) => {
-        let text = rawBlock.trim();
-        if (!text) return;
+        let text = rawBlock;
+        if (!text || !text.trim()) return;
 
         let styleClass = "style-white";
         let alignClass = defaultAlign;
@@ -530,7 +535,8 @@
         if (text.startsWith("---")) {
           const firstLineEnd = text.indexOf("\n");
           const tagLine = (firstLineEnd !== -1) ? text.substring(0, firstLineEnd) : text;
-          text = (firstLineEnd !== -1) ? text.substring(firstLineEnd + 1).trim() : "";
+          // タグの直後の改行1つだけを除去し、末尾の改行・空行はそのまま維持！
+          text = (firstLineEnd !== -1) ? text.substring(firstLineEnd + 1) : "";
 
           if (tagLine.includes("赤枠")) {
             styleClass = "style-redbox";
@@ -551,6 +557,9 @@
           if (idx === 0) styleClass = "style-gold";
           else styleClass = "style-white";
         }
+
+        // 先頭の余分な改行のみトリムし、末尾の空行は活かす
+        text = text.replace(/^\n+/, '');
 
         if (text) {
           html += `<div class="block-base ${styleClass} ${alignClass}">${text}</div>`;
@@ -609,7 +618,6 @@
       });
     }
 
-    // 【修正】アルバム名2行表示 ＆ 37〜41番の曲タップ時に対象曲を開く！
     function renderTrackGrid() {
       const grid = document.getElementById("track-grid");
       const header = document.getElementById("tracklist-header");
@@ -631,7 +639,6 @@
               const isCurrent = (idx === currentIndex && currentOmakeIndex === tIdx);
               const btn = document.createElement("div");
               btn.className = "link-item-btn" + (isCurrent ? " current" : "");
-              // ★タップしたおまけ曲番号（tIdx）を直接渡して開く！
               btn.onclick = () => {
                 loadChapter(idx, tIdx);
                 switchView('lyric');
@@ -666,7 +673,6 @@
       });
     }
 
-    // 【修正】指定されたおまけ曲を確実に再生・表示する関数
     async function selectOmakeTrack(tIdx) {
       currentOmakeIndex = tIdx;
       const ch = chapters[currentIndex];
@@ -674,14 +680,12 @@
 
       const track = ch.omakeTracks[tIdx];
 
-      // セレクターボタンのアクティブ更新
       document.querySelectorAll(".omake-btn").forEach((b, i) => {
         b.classList.toggle("active", i === tIdx);
       });
 
       document.getElementById("song-name").innerText = track.name;
 
-      // 音源切り替え
       const player = document.getElementById("audio-player");
       const status = document.getElementById("audio-status");
       if (track.mp3 && track.mp3.trim() !== "") {
@@ -695,11 +699,9 @@
         status.innerText = "（🎵 音源準備中）";
       }
 
-      // 歌詞読み込み
       const lyrics = await fetchText("lyrics/" + track.file);
       document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(lyrics, "align-center");
 
-      // 下の曲目リストのハイライト更新
       renderTrackGrid();
     }
 
@@ -733,7 +735,6 @@
       }
     }
 
-    // 【修正】targetOmakeIdx 引数を追加！ 指定曲でダイレクト起動
     async function loadChapter(index, targetOmakeIdx = 0) {
       currentIndex = index;
       const ch = chapters[index];
@@ -757,12 +758,12 @@
         }
       }
 
-      // 小説本文読み込み
+      // 小説本文読み込み（末尾改行維持）
       document.getElementById("novel-text").innerHTML = "<p>読み込み中...</p>";
       const rawNovel = await fetchText("novel/" + ch.novelFile);
       document.getElementById("novel-text").innerHTML = parseCustomMarkup(rawNovel, "align-left");
 
-      // 歌詞読み込み（★指定されたおまけ曲を直接セット！）
+      // 歌詞読み込み
       if (ch.isOmake) {
         renderOmakeSelector(ch);
         selectOmakeTrack(targetOmakeIdx);
@@ -773,7 +774,6 @@
         document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(rawLyric, "align-center");
       }
 
-      // 目次ページのときは章一覧ボタンを表示
       if (ch.isTop) {
         document.getElementById("top-chapter-portal").style.display = "block";
         document.getElementById("book-footer").style.display = "none";
