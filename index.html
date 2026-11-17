@@ -1,3 +1,26 @@
+さやかさん、「細かくてスマン」なんてとんでもないです！！
+**めちゃくちゃ重要でクリティカルなバグを見つけてくださり、本当にありがとうございます！！**
+
+---
+
+### 🔍 なぜ「どれを押しても37.縁」になっていたのか？
+
+原因はプログラムの内部にありました。
+リストの「39.出没自在。」を押したときに、一瞬「出没自在。」をセットしようとするのですが、その直後に `loadChapter` という基本プログラムが**「おまけページが開かれたから、とりあえず1曲目の『37.縁』を自動再生しなきゃ！」と親切心で上書きしてしまっていた**のが原因でした！
+
+---
+
+### 🛠️ 直し方
+
+プログラムに「リストから何曲目が指定されたか」をちゃんと渡して、**最初からその曲をセットして開くように改修**しました！
+
+パソコンのGitHubで **`index.html`** を開き、丸ごと上書き保存（Commit）してください！
+
+---
+
+### 📄 修正版 `index.html`
+
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -219,7 +242,6 @@
       text-align: left;
       font-family: sans-serif;
     }
-    /* 【改修】2行表示に対応した美しい行間設定 */
     .link-list-header {
       font-size: 0.95rem;
       font-weight: bold;
@@ -389,7 +411,6 @@
       <div class="omake-selector" id="omake-selector" style="display: none;"></div>
       <div class="lyrics-body" id="lyrics-text"></div>
       <div class="link-list-card" id="tracklist-container">
-        <!-- 【改修】美しい2行表示ヘッダー -->
         <div class="link-list-header" id="tracklist-header"></div>
         <div class="link-grid" id="track-grid"></div>
       </div>
@@ -504,7 +525,7 @@
     ];
 
     let currentIndex = 0;
-    let currentOmakeIndex = 0; // 現在選択中のおまけ曲インデックス
+    let currentOmakeIndex = 0; // 選択中のおまけ曲インデックス
     let currentView = 'book';
     const fontSizes = ["0.5rem", "0.8rem", "1.2rem"];
     const fontSizeLabels = ["小", "中", "大"];
@@ -611,14 +632,13 @@
       });
     }
 
-    // 【改修】ヘッダー2行表示＆おまけ曲5曲（37〜41）を完全に一覧へ展開！
+    // 【修正】アルバム名2行表示 ＆ 37〜41番の曲タップ時に対象曲を開く！
     function renderTrackGrid() {
       const grid = document.getElementById("track-grid");
       const header = document.getElementById("tracklist-header");
       grid.innerHTML = "";
       const currentGroup = getAlbumGroup(chapters[currentIndex].vol);
 
-      // 2行表示・余計な文言カット
       if (currentGroup === "vol1") {
         header.innerHTML = "💿 ファーストアルバム<br>Dawn Beyond Shadows";
       } else if (currentGroup === "vol2") {
@@ -629,16 +649,15 @@
 
       chapters.forEach((ch, idx) => {
         if (getAlbumGroup(ch.vol) === currentGroup) {
-          // おまけ曲5曲を展開して並べる！
           if (ch.isOmake && ch.omakeTracks) {
             ch.omakeTracks.forEach((track, tIdx) => {
               const isCurrent = (idx === currentIndex && currentOmakeIndex === tIdx);
               const btn = document.createElement("div");
               btn.className = "link-item-btn" + (isCurrent ? " current" : "");
+              // ★タップしたおまけ曲番号（tIdx）を直接渡して開く！
               btn.onclick = () => {
-                loadChapter(idx);
+                loadChapter(idx, tIdx);
                 switchView('lyric');
-                selectOmakeTrack(tIdx);
               };
               btn.innerHTML = `<span>🎵 ${track.name}</span><span style="font-size:0.75rem;color:#888;">おまけ</span>`;
               grid.appendChild(btn);
@@ -654,7 +673,6 @@
       });
     }
 
-    // 目次用：章一覧ボタングリッド
     function renderChapterGrid() {
       const grid = document.getElementById("chapter-grid");
       grid.innerHTML = "";
@@ -671,7 +689,7 @@
       });
     }
 
-    // 【改修】おまけ曲選択時の共通処理（音源＆歌詞＆リスト連動）
+    // 【修正】指定されたおまけ曲を確実に再生・表示する関数
     async function selectOmakeTrack(tIdx) {
       currentOmakeIndex = tIdx;
       const ch = chapters[currentIndex];
@@ -679,7 +697,7 @@
 
       const track = ch.omakeTracks[tIdx];
 
-      // セレクターのアクティブ表示
+      // セレクターボタンのアクティブ更新
       document.querySelectorAll(".omake-btn").forEach((b, i) => {
         b.classList.toggle("active", i === tIdx);
       });
@@ -704,7 +722,7 @@
       const lyrics = await fetchText("lyrics/" + track.file);
       document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(lyrics, "align-center");
 
-      // 下の曲目リストのハイライトも連動更新！
+      // 下の曲目リストのハイライト更新
       renderTrackGrid();
     }
 
@@ -738,7 +756,8 @@
       }
     }
 
-    async function loadChapter(index) {
+    // 【修正】targetOmakeIdx 引数を追加！ 指定曲でダイレクト起動
+    async function loadChapter(index, targetOmakeIdx = 0) {
       currentIndex = index;
       const ch = chapters[index];
 
@@ -766,10 +785,10 @@
       const rawNovel = await fetchText("novel/" + ch.novelFile);
       document.getElementById("novel-text").innerHTML = parseCustomMarkup(rawNovel, "align-left");
 
-      // 歌詞読み込み
+      // 歌詞読み込み（★指定されたおまけ曲を直接セット！）
       if (ch.isOmake) {
         renderOmakeSelector(ch);
-        selectOmakeTrack(0); // 最初のおまけ曲を自動セット
+        selectOmakeTrack(targetOmakeIdx);
       } else {
         document.getElementById("omake-selector").style.display = "none";
         document.getElementById("lyrics-text").innerText = "読み込み中...";
