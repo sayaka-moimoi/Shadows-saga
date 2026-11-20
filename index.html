@@ -159,7 +159,7 @@
     .style-redbox {
       background: rgba(201, 42, 42, 0.05);
       border-left: 3px solid var(--accent-red);
-      padding: 18px;
+      padding: 9px 18px;
       font-size: 0.9em;
       color: #ccc;
     }
@@ -519,7 +519,7 @@
       return "other";
     }
 
-    // 【改修】末尾の改行（空行）を一切削らず、そのまま維持するパーサー！
+    // 【改修】先頭・末尾を含め、テキスト内の改行・空行をすべてそのまま維持するパーサー！
     function parseCustomMarkup(rawText, defaultAlign = "align-left") {
       if (!rawText) return "<p>（内容がありません）</p>";
 
@@ -540,7 +540,7 @@
         if (text.startsWith("---")) {
           const firstLineEnd = text.indexOf("\n");
           const tagLine = (firstLineEnd !== -1) ? text.substring(0, firstLineEnd) : text;
-          // タグの直後の改行1つだけを除去し、末尾の改行・空行はそのまま維持！
+          // タグ行の直後の改行1つだけを除去し、前後の空行はすべて維持！
           text = (firstLineEnd !== -1) ? text.substring(firstLineEnd + 1) : "";
 
           if (tagLine.includes("赤枠")) {
@@ -562,9 +562,6 @@
           if (idx === 0) styleClass = "style-gold";
           else styleClass = "style-white";
         }
-
-        // 先頭の余分な改行のみトリムし、末尾の空行は活かす
-        text = text.replace(/^\n+/, '');
 
         if (text) {
           html += `<div class="block-base ${styleClass} ${alignClass}">${text}</div>`;
