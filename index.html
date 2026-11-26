@@ -254,4 +254,611 @@
       width: 320px;
       height: 100vh;
       background: #121218;
-      box-shadow: -5px
+      box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+      transition: right 0.3s ease;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+    }
+    .sidebar.open { right: 0; }
+    .sidebar-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      color: var(--accent-gold);
+      font-family: sans-serif;
+    }
+    .toc-container { flex: 1; overflow-y: auto; padding: 10px 0; font-family: sans-serif; }
+    .accordion-header {
+      padding: 14px 20px;
+      font-size: 0.85rem;
+      color: var(--accent-gold);
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.02);
+    }
+    .accordion-content { display: none; list-style: none; }
+    .accordion-content.open { display: block; }
+    .toc-item {
+      padding: 10px 20px 10px 30px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #aaa;
+      border-bottom: 1px solid rgba(255,255,255,0.02);
+    }
+    .toc-item:hover, .toc-item.active {
+      background: var(--panel-bg);
+      color: var(--accent-gold);
+      border-left: 3px solid var(--accent-gold);
+    }
+    .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: none; z-index: 150; }
+    .overlay.open { display: block; }
+    .footer-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(13, 13, 17, 0.95);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 20px;
+      backdrop-filter: blur(8px);
+      z-index: 90;
+    }
+    .nav-btn {
+      background: var(--panel-bg);
+      border: 1px solid var(--border-color);
+      color: #fff;
+      padding: 8px 24px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      font-family: sans-serif;
+    }
+    .nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-title" onclick="loadChapter(0)">Shadows:SAGA</div>
+    <div class="header-controls">
+      <button class="btn-icon" onclick="toggleFontSize()">文字: <span id="font-size-label">中</span></button>
+      <button class="btn-icon" onclick="toggleSidebar()">目次 ☰</button>
+    </div>
+  </header>
+
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h3>目次一覧</h3>
+      <button class="btn-icon" onclick="toggleSidebar()">✕</button>
+    </div>
+    <div class="toc-container" id="accordion-toc"></div>
+  </aside>
+
+  <main>
+    <div class="chapter-header">
+      <div class="volume-tag" id="vol-tag">第１巻：Dawn Beyond Shadows</div>
+    </div>
+
+    <div class="audio-card" id="audio-card">
+      <div class="audio-info">
+        <div class="audio-title-wrap">
+          <span class="audio-badge">BGM</span>
+          <span class="audio-song-name" id="song-name">曲名</span>
+        </div>
+        <span class="no-audio-msg" id="audio-status"></span>
+      </div>
+      <audio id="audio-player" controls preload="metadata" src=""></audio>
+    </div>
+
+    <div class="view-tabs" id="view-tabs">
+      <button class="tab-btn active" id="tab-book" onclick="switchView('book')">📖 小説 (Book)</button>
+      <button class="tab-btn" id="tab-lyric" onclick="switchView('lyric')">📜 歌詞 (Lyric)</button>
+    </div>
+
+    <!-- 小説エリア -->
+    <div class="view-content active" id="content-book">
+      <article class="novel-body" id="novel-text"></article>
+      <div class="link-list-card" id="book-chapter-card">
+        <div class="link-list-header" id="book-chapter-header" style="color: var(--accent-gold);">📖 章一覧（タップで移動）</div>
+        <div class="link-grid" id="chapter-grid"></div>
+      </div>
+    </div>
+
+    <!-- 歌詞エリア -->
+    <div class="view-content" id="content-lyric">
+      <div class="omake-selector" id="omake-selector" style="display: none;"></div>
+      <div class="lyrics-body" id="lyrics-text"></div>
+      <div class="link-list-card" id="tracklist-container">
+        <div class="link-list-header" id="tracklist-header" style="color: var(--accent-red);">💿 収録曲リスト（タップで移動）</div>
+        <div class="link-grid" id="track-grid"></div>
+      </div>
+    </div>
+  </main>
+
+  <div class="footer-nav">
+    <button class="nav-btn" id="prev-btn" onclick="prevChapter()">← 前の章</button>
+    <button class="nav-btn" id="next-btn" onclick="nextChapter()">次の章 →</button>
+  </div>
+
+  <script>
+    // ===== 全体インデックス定義（順序：第１巻 ➡️ 第２巻 ➡️ 考察 ➡️ 外伝） =====
+    const chapters = [
+      // ----------------- 第１巻 -----------------
+      { vol: "第１巻：Dawn Beyond Shadows", title: "第１巻 もくじ", song: "1.Dawn Beyond Shadows", mp3: "BGM/1-01.Dawn Beyond Shadows.mp3", novelFile: "v1_00.txt", lyricFile: "v1_00.txt", isTop: true },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "1# 黎明", song: "2.Ember!", mp3: "BGM/1-02.Ember!.mp3", novelFile: "v1_01.txt", lyricFile: "v1_01.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "2# 交戦", song: "3.Light of Resistance", mp3: "BGM/1-03.Light of Resistance.mp3", novelFile: "v1_02.txt", lyricFile: "v1_02.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "3# 脅威", song: "4.Unstoppable Darkness", mp3: "BGM/1-04.Unstoppable Darkness.mp3", novelFile: "v1_03.txt", lyricFile: "v1_03.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "4# 紅白", song: "5.緋色の決戦", mp3: "BGM/1-05.緋色の決戦.mp3", novelFile: "v1_04.txt", lyricFile: "v1_04.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "5# 策略", song: "6.漆黒のRondo", mp3: "BGM/1-06.漆黒のRondo.mp3", novelFile: "v1_05.txt", lyricFile: "v1_05.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "6# 闇堕", song: "7.Echoes of Tomorrow", mp3: "BGM/1-07.Echoes of Tomorrow.mp3", novelFile: "v1_06.txt", lyricFile: "v1_06.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "7# 喪失", song: "8.Lost in the Shadow", mp3: "BGM/1-08.'Lost in the Shadow'.mp3", novelFile: "v1_07.txt", lyricFile: "v1_07.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "8# 残滓", song: "9.静寂のムコウ", mp3: "BGM/1-09.静寂のムコウ.mp3", novelFile: "v1_08.txt", lyricFile: "v1_08.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "9# 奮起", song: "10.unreachable voice", mp3: "BGM/1-10.unreachable voice.mp3", novelFile: "v1_09.txt", lyricFile: "v1_09.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "10# 蛍丸", song: "11.影の円舞曲", mp3: "BGM/1-11.影の円舞曲.mp3", novelFile: "v1_10.txt", lyricFile: "v1_10.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "11# 遭遇", song: "12.折りたたむ夜､ほどける朝｡", mp3: "BGM/1-12.おりたたむ夜、ほどける朝。.mp3", novelFile: "v1_11.txt", lyricFile: "v1_11.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "12# 歌声", song: "13.Awakening Voice", mp3: "BGM/1-13.Awakening Voice.mp3", novelFile: "v1_12.txt", lyricFile: "v1_12.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "13# 絶叫", song: "14.Scream It Out !!", mp3: "BGM/1-14.Scream It Out !!.mp3", novelFile: "v1_13.txt", lyricFile: "v1_13.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "14# 舞踏", song: "15.Step Into the Beat!!", mp3: "BGM/1-15.Step Into the Beat !!.mp3", novelFile: "v1_14.txt", lyricFile: "v1_14.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "15# 折紙", song: "16.Wings of Peace \~平和の翼\~", mp3: "BGM/1-16.Wings of Peace \~平和の翼\~.mp3", novelFile: "v1_15.txt", lyricFile: "v1_15.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "16# 共鳴", song: "17.「Lunar Eclipse」", mp3: "BGM/1-17.｢Lunar Eclipse｣.mp3", novelFile: "v1_16.txt", lyricFile: "v1_16.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "17# 対峙", song: "18.滅びの序曲", mp3: "BGM/1-18.滅びの序曲.mp3", novelFile: "v1_17.txt", lyricFile: "v1_17.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "18# 響鋼", song: "19.響､メタる！", mp3: "BGM/1-19.響､メタる！.mp3", novelFile: "v1_18.txt", lyricFile: "v1_18.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "19# 記憶", song: "20.Code of Hope", mp3: "BGM/1-20.Code of Hope.mp3", novelFile: "v1_19.txt", lyricFile: "v1_19.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "20# 業火", song: "21.Fading Light", mp3: "BGM/1-21.Fading Light.mp3", novelFile: "v1_20.txt", lyricFile: "v1_20.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "21# 世界", song: "22.ルマンドＸのテーマ", mp3: "BGM/1-22.ルマンドＸのテーマ.mp3", novelFile: "v1_21.txt", lyricFile: "v1_21.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "22# 決起", song: "23.RISE AGAIN", mp3: "BGM/1-23.RISE AGAIN.mp3", novelFile: "v1_22.txt", lyricFile: "v1_22.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "23# 武闘", song: "24.闇の爪 – Shadow’s Grip", mp3: "BGM/1-24.闇の爪 – Shadow’s Grip.mp3", novelFile: "v1_23.txt", lyricFile: "v1_23.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "24# 決着", song: "25.METAL Requiem", mp3: "BGM/1-25.METAL Requiem.mp3", novelFile: "v1_24.txt", lyricFile: "v1_24.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "25# 再会", song: "26.- 影の王国 -", mp3: "BGM/1-26.- 影の王国 -.mp3", novelFile: "v1_25.txt", lyricFile: "v1_25.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "26# 影折", song: "27.影折 -Shadow's Wrath-", mp3: "BGM/1-27.影折 - Shadow's Wrath -.mp3", novelFile: "v1_26.txt", lyricFile: "v1_26.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "27# 舞闘", song: "28.Dancerble Fighter.", mp3: "BGM/1-28.Dancerble Fighter..mp3", novelFile: "v1_27.txt", lyricFile: "v1_27.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "28# 音撃", song: "29.Beyond the Darkness", mp3: "BGM/1-29.Beyond the Darkness.mp3", novelFile: "v1_28.txt", lyricFile: "v1_28.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "29# 光折", song: "30.光折 -Light of Resistance-", mp3: "BGM/1-30.光折 - Light of Resistance -.mp3", novelFile: "v1_29.txt", lyricFile: "v1_29.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "30# 昇華", song: "31.No Light,No Shadow", mp3: "BGM/1-31.No Light,No Shadow.mp3", novelFile: "v1_30.txt", lyricFile: "v1_30.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "31# 由結", song: "32.Into the Light", mp3: "BGM/1-32.Into the Light.mp3", novelFile: "v1_31.txt", lyricFile: "v1_31.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "32# 暁光", song: "33.暁 - アカツキ -", mp3: "BGM/1-33.暁 -アカツキ-.mp3", novelFile: "v1_32.txt", lyricFile: "v1_32.txt" },
+      { vol: "第１巻：Bonus", title: "第１巻 Bonus 1", song: "34.LIGHT and SHADOW", mp3: "BGM/1-34.LIGHT and SHADOW.mp3", novelFile: "v1_33.txt", lyricFile: "v1_33.txt" },
+      { vol: "第１巻：Bonus", title: "第１巻 Bonus 2", song: "35.SHINING LIGHT", mp3: "BGM/1-35.SHINING LIGHT.mp3", novelFile: "v1_34.txt", lyricFile: "v1_34.txt" },
+
+      // ----------------- 第２巻 -----------------
+      { vol: "第２巻：Shadows of Rebellion", title: "第２巻 もくじ", song: "1.Shadows of Rebellion", mp3: "BGM/2-01.Shadows of Rebellion.mp3", novelFile: "v2_top.txt", lyricFile: "v2_top.txt", isTop: true },
+      { vol: "第２巻：Shadows of Rebellion", title: "0# 序章", song: "2.光と影のセンリツ", mp3: "BGM/2-02.光と影のセンリツ.mp3", novelFile: "v2_00.txt", lyricFile: "v2_00.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "1# 再生", song: "3.Re:birth", mp3: "BGM/2-03.Re_birth.mp3", novelFile: "v2_01.txt", lyricFile: "v2_01.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "2# 日常", song: "4.影の向こうで", mp3: "BGM/2-04.影の向こうで.mp3", novelFile: "v2_02.txt", lyricFile: "v2_02.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "3# 異変", song: "5.The Return of Shadows", mp3: "BGM/2-05.The Return of Shadows.mp3", novelFile: "v2_03.txt", lyricFile: "v2_03.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "4# 迎撃", song: "6.Seize the Future", mp3: "BGM/2-06.Seize the Future.mp3", novelFile: "v2_04.txt", lyricFile: "v2_04.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "5# 疑念", song: "7.Alter-Echo", mp3: "BGM/2-07.Alter-Echo.mp3", novelFile: "v2_05.txt", lyricFile: "v2_05.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "6# 覚醒", song: "8.Fallen Anthem", mp3: "BGM/2-08.Fallen Anthem.mp3", novelFile: "v2_06.txt", lyricFile: "v2_06.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "7# 際会", song: "9.Into the Dark", mp3: "BGM/2-09.Encounter with Darkness.mp3", novelFile: "v2_07.txt", lyricFile: "v2_07.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "8# 伝説", song: "10.新たなる伝説(ち力)を求めて", mp3: "BGM/2-10.新たなる伝説(ちから)を求めて.mp3", novelFile: "v2_08.txt", lyricFile: "v2_08.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "9# 宿場", song: "11.小江戸ろっく節。", mp3: "BGM/2-11.小江戸ろっく節。.mp3", novelFile: "v2_09.txt", lyricFile: "v2_09.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "10# 宿娘", song: "12.Fighter At inn", mp3: "BGM/2-12.Fighter At inn.mp3", novelFile: "v2_10.txt", lyricFile: "v2_10.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "11# 露店", song: "13.銀の首飾り", mp3: "BGM/2-13.銀の首飾り.mp3", novelFile: "v2_11.txt", lyricFile: "v2_11.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "12# 静夜", song: "14.Silent in the night…", mp3: "BGM/2-14.Silent in the night....mp3", novelFile: "v2_12.txt", lyricFile: "v2_12.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "13# 襲撃", song: "15.Shadow Braker", mp3: "BGM/2-15.Shadow Braker.mp3", novelFile: "v2_13.txt", lyricFile: "v2_13.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "14# 加入", song: "16.「誓灯」", mp3: "BGM/2-16.「誓灯」.mp3", novelFile: "v2_14.txt", lyricFile: "v2_14.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "15# 険路", song: "17.Path \~道は険しくとも\~", mp3: "BGM/2-17.Path \~道は険しくとも\~.mp3", novelFile: "v2_15.txt", lyricFile: "v2_15.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "16# 試練", song: "18.RISE", mp3: "BGM/2-18.RISE.mp3", novelFile: "v2_16.txt", lyricFile: "v2_16.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "17# 音響", song: "19.sound of revival", mp3: "BGM/2-19.sound of revival.mp3", novelFile: "v2_17.txt", lyricFile: "v2_17.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "18# 受容", song: "20.Embrace-Darkness", mp3: "BGM/2-20.Embrace-Darkness.mp3", novelFile: "v2_18.txt", lyricFile: "v2_18.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "19# 調和", song: "21.Resonance", mp3: "BGM/2-21.Resonanse.mp3", novelFile: "v2_19.txt", lyricFile: "v2_19.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "20# 光奏", song: "22.Hold the Light.", mp3: "BGM/2-22.Hold the Light..mp3", novelFile: "v2_20.txt", lyricFile: "v2_20.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "21# 挑戦", song: "23.Strike! Fight!", mp3: "BGM/2-23.Strike! Fight!.mp3", novelFile: "v2_21.txt", lyricFile: "v2_21.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "22# 奏撃", song: "24.かなで(LIVE Ver.)", mp3: "BGM/2-24.かなで(Live ver.).mp3", novelFile: "v2_22.txt", lyricFile: "v2_22.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "23# 撤退", song: "25.dark dissonance", mp3: "BGM/2-25.dark dissonance.mp3", novelFile: "v2_23.txt", lyricFile: "v2_23.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "24# 消沈", song: "26.憂いのmelody", mp3: "BGM/2-26.憂いのmelody.mp3", novelFile: "v2_24.txt", lyricFile: "v2_24.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "25# 報告", song: "27.Crimson Echoes", mp3: "BGM/2-27.Crimson Echoes.mp3", novelFile: "v2_25.txt", lyricFile: "v2_25.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "26# 戦記", song: "28.the Legend", mp3: "BGM/2-28.the Legend.mp3", novelFile: "v2_26.txt", lyricFile: "v2_26.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "27# 楽譜", song: "29.Harmonizing", mp3: "BGM/2-29.Harmonizing.mp3", novelFile: "v2_27.txt", lyricFile: "v2_27.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "28# 川越", song: "30.川越の風に", mp3: "BGM/2-30.川越の風に.mp3", novelFile: "v2_28.txt", lyricFile: "v2_28.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "29# 説得", song: "31.como amigos", mp3: "BGM/2-31.como amigos.mp3", novelFile: "v2_29.txt", lyricFile: "v2_29.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "30# 決意", song: "32.Back to the Quest!!", mp3: "BGM/2-32.Back to the Quest.mp3", novelFile: "v2_30.txt", lyricFile: "v2_30.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "31# 追撃", song: "33.Counterstrikes.", mp3: "BGM/2-33.Counterstrikes..mp3", novelFile: "v2_31.txt", lyricFile: "v2_31.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "32# 決戦", song: "34.斬光の宴", mp3: "BGM/2-34.斬光の宴.mp3", novelFile: "v2_32.txt", lyricFile: "v2_32.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "33# 終焉", song: "35.The End of the Rebellion", mp3: "BGM/2-35.The End of the Rebellion.mp3", novelFile: "v2_33.txt", lyricFile: "v2_33.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "34# 光闇", song: "36.光を超え､影を見つめ｡", mp3: "BGM/2-36.光を越え、影をみつめ。.mp3", novelFile: "v2_34.txt", lyricFile: "v2_34.txt" },
+      { 
+        vol: "第２巻：おまけ", 
+        title: "第２巻 おまけ", 
+        song: "37.‐縁‐", 
+        mp3: "BGM/2-37.- 縁 -.mp3", 
+        novelFile: "v2_omake.txt", 
+        isOmake: true, 
+        omakeTracks: [
+          { name: "37.‐縁‐", file: "v2_omake_1.txt", mp3: "BGM/2-37.- 縁 -.mp3" },
+          { name: "38.光と影のビート", file: "v2_omake_2.txt", mp3: "BGM/2-38.光と影のビート.mp3" },
+          { name: "39.出没自在。", file: "v2_omake_3.txt", mp3: "BGM/2-39.出没自在。.mp3" },
+          { name: "40.夢見宿", file: "v2_omake_4.txt", mp3: "BGM/2-40.夢見宿.mp3" },
+          { name: "41.Ash Bloom", file: "v2_omake_5.txt", mp3: "BGM/2-41.Ash Bloom.mp3" },
+        ]
+      },
+
+      // ----------------- 【本編直後】巻末考察アーカイブ -----------------
+      { vol: "巻末アーカイブ：AI徹底考察", title: "考察①：総評（調和の物語構造）", song: "", mp3: "", novelFile: "review_01.txt", lyricFile: "" },
+      { vol: "巻末アーカイブ：AI徹底考察", title: "考察②：カニの変遷と奇跡の軌跡", song: "", mp3: "", novelFile: "review_02.txt", lyricFile: "" },
+      { vol: "巻末アーカイブ：AI徹底考察", title: "考察③：キャラクター別名（迷）シーン大集合！", song: "", mp3: "", novelFile: "review_03.txt", lyricFile: "" },
+      { vol: "巻末アーカイブ：AI徹底考察", title: "考察④：文体批評・４連続一人称リレー", song: "", mp3: "", novelFile: "review_04.txt", lyricFile: "" },
+      { vol: "巻末アーカイブ：AI徹底考察", title: "考察⑤：楽曲解剖・『影折』vs『光折』の鏡像対比", song: "", mp3: "", novelFile: "review_05.txt", lyricFile: "" },
+      { vol: "巻末アーカイブ：AI徹底考察", title: "考察⑥：出没自在。かいとん。姐さんの全編監視録", song: "", mp3: "", novelFile: "review_06.txt", lyricFile: "" },
+
+      // ----------------- 外伝 -----------------
+      { vol: "外伝シリーズ", title: "外伝1『蛍丸』", song: "", mp3: "", novelFile: "gaiden_01.txt", lyricFile: "" }
+    ];
+
+    let currentIndex = 0;
+    let currentOmakeIndex = 0;
+    let currentView = 'book';
+
+    const fontSizes = ["0.8rem", "1.0rem", "1.2rem"];
+    const fontSizeLabels = ["小", "中", "大"];
+    let currentFontSizeIdx = 1;
+
+    function getAlbumGroup(vol) {
+      if (vol.includes("第１巻")) return "vol1";
+      if (vol.includes("第２巻")) return "vol2";
+      if (vol.includes("考察")) return "review";
+      if (vol.includes("外伝")) return "gaiden";
+      return "other";
+    }
+
+    // ===== 改善版パーサー =====
+    // 制御文でスタイルを切り替えつつ、制御文前後の改行を各エリアの改行として正しく振り分ける
+    function parseCustomMarkup(rawText, defaultAlign = "align-left") {
+      if (!rawText) return "<p>（内容がありません）</p>";
+
+      rawText = rawText.replace(/\r\n?/g, "\n");
+
+      const lines = rawText.split("\n");
+      const blocks = [];
+
+      let currentStyle = "style-gold";   // 最初のブロックはタイトル扱いになりやすい
+      let currentAlign = defaultAlign;
+      let buffer = [];
+
+      function flush() {
+        if (buffer.length === 0) return;
+
+        const text = buffer.join("\n");
+        blocks.push({
+          style: currentStyle,
+          align: currentAlign,
+          text: text
+        });
+        buffer = [];
+      }
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.startsWith("---")) {
+          // 現在のバッファを確定（制御文直前の改行はここに含まれる）
+          flush();
+
+          // 新しいスタイル・配置を設定
+          let styleClass = "style-white";
+          let alignClass = defaultAlign;
+
+          if (line.includes("赤枠")) {
+            styleClass = "style-redbox";
+          } else if (line.includes("黄") || line.includes("タイトル")) {
+            styleClass = "style-gold";
+          } else {
+            styleClass = "style-white";
+          }
+
+          if (line.includes("中") || line.includes("センタリング") || line.includes("中央")) {
+            alignClass = "align-center";
+          } else if (line.includes("右")) {
+            alignClass = "align-right";
+          } else if (line.includes("左")) {
+            alignClass = "align-left";
+          }
+
+          currentStyle = styleClass;
+          currentAlign = alignClass;
+
+          // 制御文自体は捨てる（直後の改行は次のループでbufferに入る）
+          continue;
+        }
+
+        // 通常の行（または空行）を現在のブロックに追加
+        buffer.push(line);
+      }
+
+      // 最後のブロックを確定
+      flush();
+
+      // HTML生成
+      let html = "";
+      blocks.forEach(block => {
+        // 完全に空白だけのブロックはスキップ（改行だけなら余白として残す）
+        if (block.text.trim() === "" && !block.text.includes("\n")) return;
+
+        const parsedContent = block.text.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
+        html += `<div class="block-base ${block.style} \( {block.align}"> \){parsedContent}</div>`;
+      });
+
+      return html || "<p>（内容がありません）</p>";
+    }
+
+    async function fetchText(path) {
+      try {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error("Not Found");
+        return await res.text();
+      } catch (err) {
+        return `⚠️ テキストファイル（${path}）がまだアップロードされていません。GitHubの該当フォルダに置いてください。`;
+      }
+    }
+
+    function renderAccordionToc() {
+      const container = document.getElementById("accordion-toc");
+      container.innerHTML = "";
+      const groups = {};
+      chapters.forEach((ch, idx) => {
+        if (!groups[ch.vol]) groups[ch.vol] = [];
+        groups[ch.vol].push({ ch, idx });
+      });
+
+      Object.keys(groups).forEach(volName => {
+        const header = document.createElement("div");
+        header.className = "accordion-header";
+        header.innerHTML = `<span>▶ ${volName}</span><span style="font-size:0.75rem;">▼</span>`;
+        
+        const content = document.createElement("ul");
+        content.className = "accordion-content";
+        if (chapters[currentIndex].vol === volName) {
+          content.classList.add("open");
+          header.querySelector("span:first-child").innerText = `▼ ${volName}`;
+        }
+
+        header.onclick = () => {
+          content.classList.toggle("open");
+          header.querySelector("span:first-child").innerText = content.classList.contains("open") ? `▼ ${volName}` : `▶ ${volName}`;
+        };
+
+        groups[volName].forEach(item => {
+          const li = document.createElement("li");
+          li.className = "toc-item" + (item.idx === currentIndex ? " active" : "");
+          li.innerText = item.ch.title;
+          li.onclick = () => { loadChapter(item.idx); toggleSidebar(); };
+          content.appendChild(li);
+        });
+
+        container.appendChild(header);
+        container.appendChild(content);
+      });
+    }
+
+    function renderTrackGrid() {
+      const grid = document.getElementById("track-grid");
+      const header = document.getElementById("tracklist-header");
+      grid.innerHTML = "";
+      const currentGroup = getAlbumGroup(chapters[currentIndex].vol);
+
+      if (currentGroup === "vol1") {
+        header.innerHTML = "💿 ファーストアルバム<br>Dawn Beyond Shadows";
+      } else if (currentGroup === "vol2") {
+        header.innerHTML = "💿 セカンドアルバム<br>Shadows of Rebellion";
+      } else {
+        header.innerHTML = "💿 収録曲リスト";
+      }
+
+      chapters.forEach((ch, idx) => {
+        if (getAlbumGroup(ch.vol) === currentGroup) {
+          if (ch.isOmake && ch.omakeTracks) {
+            ch.omakeTracks.forEach((track, tIdx) => {
+              const isCurrent = (idx === currentIndex && currentOmakeIndex === tIdx);
+              const btn = document.createElement("div");
+              btn.className = "link-item-btn" + (isCurrent ? " current" : "");
+              btn.onclick = () => {
+                loadChapter(idx, tIdx);
+                switchView('lyric');
+              };
+              btn.innerHTML = `<span>🎵 ${track.name}</span><span style="font-size:0.75rem;color:#888;">おまけ</span>`;
+              grid.appendChild(btn);
+            });
+          } else if (ch.song && ch.song.trim() !== "") {
+            const btn = document.createElement("div");
+            btn.className = "link-item-btn" + (idx === currentIndex ? " current" : "");
+            btn.onclick = () => { loadChapter(idx); switchView('lyric'); };
+            btn.innerHTML = `<span>🎵 \( {ch.song}</span><span style="font-size:0.75rem;color:#888;"> \){ch.title.split(' ')[0]}</span>`;
+            grid.appendChild(btn);
+          }
+        }
+      });
+    }
+
+    // 小説側フッター：その巻の章一覧リスト常設
+    function renderChapterGrid() {
+      const grid = document.getElementById("chapter-grid");
+      const header = document.getElementById("book-chapter-header");
+      grid.innerHTML = "";
+      const currentGroup = getAlbumGroup(chapters[currentIndex].vol);
+
+      if (currentGroup === "vol1") {
+        header.innerText = "📖 第１巻 章一覧（タップで移動）";
+      } else if (currentGroup === "vol2") {
+        header.innerText = "📖 第２巻 章一覧（タップで移動）";
+      } else if (currentGroup === "review") {
+        header.innerText = "📖 考察アーカイブ一覧（タップで移動）";
+      } else {
+        header.innerText = "📖 一覧（タップで移動）";
+      }
+
+      chapters.forEach((ch, idx) => {
+        if (getAlbumGroup(ch.vol) === currentGroup) {
+          const btn = document.createElement("div");
+          btn.className = "link-item-btn" + (idx === currentIndex ? " current" : "");
+          btn.onclick = () => { loadChapter(idx); switchView('book'); };
+          btn.innerHTML = `<span>${ch.title}</span><span style="font-size:0.75rem;color:var(--accent-gold);">読む →</span>`;
+          grid.appendChild(btn);
+        }
+      });
+    }
+
+    async function selectOmakeTrack(tIdx) {
+      currentOmakeIndex = tIdx;
+      const ch = chapters[currentIndex];
+      if (!ch.isOmake || !ch.omakeTracks) return;
+
+      const track = ch.omakeTracks[tIdx];
+
+      document.querySelectorAll(".omake-btn").forEach((b, i) => {
+        b.classList.toggle("active", i === tIdx);
+      });
+
+      document.getElementById("song-name").innerText = track.name;
+
+      const audioCard = document.getElementById("audio-card");
+      const player = document.getElementById("audio-player");
+      const status = document.getElementById("audio-status");
+      if (track.mp3 && track.mp3.trim() !== "") {
+        audioCard.style.display = "block";
+        player.src = track.mp3;
+        player.style.display = "block";
+        status.innerText = "";
+        player.load();
+      } else {
+        player.pause();
+        player.removeAttribute("src");
+        player.load();
+        audioCard.style.display = "none";
+      }
+
+      const lyrics = await fetchText("lyrics/" + track.file);
+      document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(lyrics, "align-center");
+
+      renderTrackGrid();
+    }
+
+    function renderOmakeSelector(ch) {
+      const selector = document.getElementById("omake-selector");
+      selector.innerHTML = "";
+      if (!ch.isOmake || !ch.omakeTracks) {
+        selector.style.display = "none";
+        return;
+      }
+      selector.style.display = "flex";
+
+      ch.omakeTracks.forEach((track, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "omake-btn" + (idx === currentOmakeIndex ? " active" : "");
+        btn.innerText = track.name;
+        btn.onclick = () => selectOmakeTrack(idx);
+        selector.appendChild(btn);
+      });
+    }
+
+    function updateFooterNavLabels() {
+      const prevBtn = document.getElementById("prev-btn");
+      const nextBtn = document.getElementById("next-btn");
+      if (currentView === 'book') {
+        prevBtn.innerText = "← 前の章";
+        nextBtn.innerText = "次の章 →";
+      } else {
+        prevBtn.innerText = "← 前の曲";
+        nextBtn.innerText = "次の曲 →";
+      }
+    }
+
+    async function loadChapter(index, targetOmakeIdx = 0) {
+      currentIndex = index;
+      const ch = chapters[index];
+
+      document.getElementById("vol-tag").innerText = ch.vol;
+      document.getElementById("song-name").innerText = ch.song || "";
+      
+      const audioCard = document.getElementById("audio-card");
+      const player = document.getElementById("audio-player");
+      const status = document.getElementById("audio-status");
+      
+      if (!ch.isOmake) {
+        if (ch.mp3 && ch.mp3.trim() !== "") {
+          audioCard.style.display = "block";
+          player.src = ch.mp3;
+          player.style.display = "block";
+          status.innerText = "";
+        } else {
+          player.pause();
+          player.removeAttribute("src");
+          player.load();
+          audioCard.style.display = "none";
+        }
+      }
+
+      // 小説本文読み込み（完全空行維持パーサー適用）
+      document.getElementById("novel-text").innerHTML = "<p>読み込み中...</p>";
+      const rawNovel = await fetchText("novel/" + ch.novelFile);
+      document.getElementById("novel-text").innerHTML = parseCustomMarkup(rawNovel, "align-left");
+
+      // 歌詞読み込み
+      const viewTabs = document.getElementById("view-tabs");
+      const hasLyric = Boolean(ch.isOmake || (ch.lyricFile && ch.lyricFile.trim() !== ""));
+
+      if (hasLyric) {
+        viewTabs.style.display = "flex";
+        if (ch.isOmake) {
+          renderOmakeSelector(ch);
+          selectOmakeTrack(targetOmakeIdx);
+        } else {
+          document.getElementById("omake-selector").style.display = "none";
+          document.getElementById("lyrics-text").innerText = "読み込み中...";
+          const rawLyric = await fetchText("lyrics/" + ch.lyricFile);
+          document.getElementById("lyrics-text").innerHTML = parseCustomMarkup(rawLyric, "align-center");
+        }
+        renderTrackGrid();
+        switchView(currentView);
+      } else {
+        viewTabs.style.display = "none";
+        document.getElementById("omake-selector").style.display = "none";
+        document.getElementById("lyrics-text").innerHTML = "";
+        switchView('book');
+      }
+
+      renderChapterGrid();
+
+      document.getElementById("prev-btn").disabled = (currentIndex === 0);
+      document.getElementById("next-btn").disabled = (currentIndex === chapters.length - 1);
+      renderAccordionToc();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function switchView(type) {
+      currentView = type;
+      document.getElementById("tab-book").classList.toggle("active", type === 'book');
+      document.getElementById("tab-lyric").classList.toggle("active", type === 'lyric');
+      document.getElementById("content-book").classList.toggle("active", type === 'book');
+      document.getElementById("content-lyric").classList.toggle("active", type === 'lyric');
+      updateFooterNavLabels();
+    }
+
+    function prevChapter() { if (currentIndex > 0) loadChapter(currentIndex - 1); }
+    function nextChapter() { if (currentIndex < chapters.length - 1) loadChapter(currentIndex + 1); }
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("open");
+      document.getElementById("overlay").classList.toggle("open");
+    }
+    function toggleFontSize() {
+      currentFontSizeIdx = (currentFontSizeIdx + 1) % fontSizes.length;
+      document.getElementById("novel-text").style.fontSize = fontSizes[currentFontSizeIdx];
+      document.getElementById("lyrics-text").style.fontSize = fontSizes[currentFontSizeIdx];
+      document.getElementById("font-size-label").innerText = fontSizeLabels[currentFontSizeIdx];
+    }
+
+    function init() {
+      renderAccordionToc();
+      loadChapter(0);
+    }
+    init();
+  </script>
+</body>
+</html>
