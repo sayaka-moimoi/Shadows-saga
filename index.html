@@ -509,13 +509,13 @@
       return "other";
     }
 
-    // ===== 本文内の改行を維持し、ブロック境界の連続改行だけを整理するパーサー =====
+    // ===== 本文内の改行を維持し、タグ境界の終端改行だけを1つ整理するパーサー =====
     function parseCustomMarkup(rawText, defaultAlign = "align-left") {
       if (!rawText) return "<p>（内容がありません）</p>";
 
       rawText = rawText.replace(/\r\n?/g, "\n");
 
-      // タグ直前の改行を前ブロック側に残して分割
+      // ---タグ行の直前で分割する。分割時、直前ブロックには境界の改行が残る。
       const rawBlocks = rawText.split(/(?<=\n)(?=---)/);
       let html = "";
 
@@ -529,6 +529,7 @@
         if (text.startsWith("---")) {
           const firstLineEnd = text.indexOf("\n");
           const tagLine = (firstLineEnd !== -1) ? text.substring(0, firstLineEnd) : text;
+          // タグ行だけを取り除く。タグ直後の本文改行はそのまま維持する。
           text = (firstLineEnd !== -1) ? text.substring(firstLineEnd + 1) : "";
 
           if (tagLine.includes("赤枠")) {
@@ -551,13 +552,15 @@
           else styleClass = "style-white";
         }
 
-        // 本文中の改行・空行はそのまま。ブロック末尾の連続改行だけ1つに整理する。
-        let parsedContent = text.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
-        if (/\n+$/.test(parsedContent)) {
-          parsedContent = parsedContent.replace(/\n+$/, "\n") + "\u200B";
+        // ブロック境界の終端改行を1つだけ除去する。
+        // 2つ以上ある場合、残りは段落間の意図的な空行として表示する。
+        // 本文途中の改行・空行には触れない。
+        if (text.endsWith("\n")) {
+          text = text.slice(0, -1);
         }
 
-        if (parsedContent.trim() !== "" || parsedContent.includes("\n")) {
+        if (text.trim() !== "" || text.includes("\n")) {
+          const parsedContent = text.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
           html += `<div class="block-base ${styleClass} ${alignClass}">${parsedContent}</div>`;
         }
       });
