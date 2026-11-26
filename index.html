@@ -509,65 +509,89 @@
       return "other";
     }
 
-    // ===== 本文内の改行を維持し、タグ境界の終端改行だけを1つ整理するパーサー =====
-    function parseCustomMarkup(rawText, defaultAlign = "align-left") {
-      if (!rawText) return "<p>（内容がありません）</p>";
+// ===== 本文内の改行を維持し、タグ境界の改行を各エリアに正しく振り分けるパーサー =====
+function parseCustomMarkup(rawText, defaultAlign = "align-left") {
+  if (!rawText) return "<p>（内容がありません）</p>";
 
-      rawText = rawText.replace(/\r\n?/g, "\n");
+  rawText = rawText.replace(/\r\n?/g, "\n");
 
-      // ---タグ行の直前で分割する。分割時、直前ブロックには境界の改行が残る。
-      const rawBlocks = rawText.split(/(?<=\n)(?=---)/);
-      let html = "";
+  const lines = rawText.split("\n");
+  const blocks = [];
 
-      rawBlocks.forEach((rawBlock, idx) => {
-        let text = rawBlock;
-        if (!text) return;
+  let currentStyle = "style-gold";   // 最初のブロックはタイトル扱いになりやすい
+  let currentAlign = defaultAlign;
+  let buffer = [];
 
-        let styleClass = "style-white";
-        let alignClass = defaultAlign;
+  function flush() {
+    // 完全に空（何も無い）の場合は捨てる
+    // ただし改行だけが含まれている場合は「余白ブロック」として残す
+    if (buffer.length === 0) return;
 
-        if (text.startsWith("---")) {
-          const firstLineEnd = text.indexOf("\n");
-          const tagLine = (firstLineEnd !== -1) ? text.substring(0, firstLineEnd) : text;
-          // タグ行だけを取り除く。タグ直後の本文改行はそのまま維持する。
-          text = (firstLineEnd !== -1) ? text.substring(firstLineEnd + 1) : "";
+    const text = buffer.join("\n");
+    // 末尾の余計な空行を1つだけ整える（必要なら調整）
+    // ここでは「ソース通り」を優先してそのまま使う
+    blocks.push({
+      style: currentStyle,
+      align: currentAlign,
+      text: text
+    });
+    buffer = [];
+  }
 
-          if (tagLine.includes("赤枠")) {
-            styleClass = "style-redbox";
-          } else if (tagLine.includes("黄") || tagLine.includes("タイトル")) {
-            styleClass = "style-gold";
-          } else {
-            styleClass = "style-white";
-          }
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
 
-          if (tagLine.includes("中") || tagLine.includes("センタリング") || tagLine.includes("中央")) {
-            alignClass = "align-center";
-          } else if (tagLine.includes("右")) {
-            alignClass = "align-right";
-          } else if (tagLine.includes("左")) {
-            alignClass = "align-left";
-          }
-        } else {
-          if (idx === 0) styleClass = "style-gold";
-          else styleClass = "style-white";
-        }
+    if (line.startsWith("---")) {
+      // 現在のバッファを確定（制御文直前の改行はここに含まれる）
+      flush();
 
-        // ブロック境界の終端改行を1つだけ除去する。
-        // 2つ以上ある場合、残りは段落間の意図的な空行として表示する。
-        // 本文途中の改行・空行には触れない。
-        if (text.endsWith("\n")) {
-          text = text.slice(0, -1);
-        }
+      // 新しいスタイル・配置を設定
+      let styleClass = "style-white";
+      let alignClass = defaultAlign;
 
-        if (text.trim() !== "" || text.includes("\n")) {
-          const parsedContent = text.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
-          html += `<div class="block-base ${styleClass} ${alignClass}">${parsedContent}</div>`;
-        }
-      });
+      if (line.includes("赤枠")) {
+        styleClass = "style-redbox";
+      } else if (line.includes("黄") || line.includes("タイトル")) {
+        styleClass = "style-gold";
+      } else {
+        styleClass = "style-white";
+      }
 
-      return html;
+      if (line.includes("中") || line.includes("センタリング") || line.includes("中央")) {
+        alignClass = "align-center";
+      } else if (line.includes("右")) {
+        alignClass = "align-right";
+      } else if (line.includes("左")) {
+        alignClass = "align-left";
+      }
+
+      currentStyle = styleClass;
+      currentAlign = alignClass;
+
+      // 制御文自体は捨てる（直後の改行は次のループでbufferに入る）
+      continue;
     }
 
+    // 通常の行（または空行）を現在のブロックに追加
+    buffer.push(line);
+  }
+
+  // 最後のブロックを確定
+  flush();
+
+  // HTML生成
+  let html = "";
+  blocks.forEach(block => {
+    // 完全に空白だけのブロックはスキップしても良いが、
+    // 「意図した余白」を残したい場合は残す
+    if (block.text.trim() === "" && !block.text.includes("\n")) return;
+
+    const parsedContent = block.text.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
+    html += `<div class="block-base ${block.style} \( {block.align}"> \){parsedContent}</div>`;
+  });
+
+  return html || "<p>（内容がありません）</p>";
+}
     async function fetchText(path) {
       try {
         const res = await fetch(path);
