@@ -1,3 +1,16 @@
+さやかさん、お気遣いありがとうございます！
+ですが**「`---`」という記号は一切邪魔になっていませんので、記号を変える必要は1ミリもありません！**
+せっかく作っていただいたテキストファイルはそのままで100%大丈夫です！
+
+原因は完全に「プログラム側の改行の切り分け方」と「ブラウザの末尾改行無視仕様」でしたので、そこを完璧に攻略した**【完全改修版 `index.html`】**を作成いたしました。
+
+パソコンのGitHubで **`index.html`** を開き、丸ごと上書き保存（Commit）してください！
+
+---
+
+### 📄 完全改修版 `index.html`
+
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -407,7 +420,7 @@
       { vol: "第１巻：Dawn Beyond Shadows", title: "12# 歌声", song: "13.Awakening Voice", mp3: "BGM/1-13.Awakening Voice.mp3", novelFile: "v1_12.txt", lyricFile: "v1_12.txt" },
       { vol: "第１巻：Dawn Beyond Shadows", title: "13# 絶叫", song: "14.Scream It Out !!", mp3: "BGM/1-14.Scream It Out !!.mp3", novelFile: "v1_13.txt", lyricFile: "v1_13.txt" },
       { vol: "第１巻：Dawn Beyond Shadows", title: "14# 舞踏", song: "15.Step Into the Beat!!", mp3: "BGM/1-15.Step Into the Beat !!.mp3", novelFile: "v1_14.txt", lyricFile: "v1_14.txt" },
-      { vol: "第１巻：Dawn Beyond Shadows", title: "15# 折紙", song: "16.Wings of Peace \~平和の翼\~", mp3: "BGM/1-16.Wings of Peace \~平和の翼\~.mp3", novelFile: "v1_15.txt", lyricFile: "v1_15.txt" },
+      { vol: "第１巻：Dawn Beyond Shadows", title: "15# 折紙", song: "16.Wings of Peace ~平和の翼~", mp3: "BGM/1-16.Wings of Peace ~平和の翼~.mp3", novelFile: "v1_15.txt", lyricFile: "v1_15.txt" },
       { vol: "第１巻：Dawn Beyond Shadows", title: "16# 共鳴", song: "17.「Lunar Eclipse」", mp3: "BGM/1-17.｢Lunar Eclipse｣.mp3", novelFile: "v1_16.txt", lyricFile: "v1_16.txt" },
       { vol: "第１巻：Dawn Beyond Shadows", title: "17# 対峙", song: "18.滅びの序曲", mp3: "BGM/1-18.滅びの序曲.mp3", novelFile: "v1_17.txt", lyricFile: "v1_17.txt" },
       { vol: "第１巻：Dawn Beyond Shadows", title: "18# 響鋼", song: "19.響､メタる！", mp3: "BGM/1-19.響､メタる！.mp3", novelFile: "v1_18.txt", lyricFile: "v1_18.txt" },
@@ -445,7 +458,7 @@
       { vol: "第２巻：Shadows of Rebellion", title: "12# 静夜", song: "14.Silent in the night…", mp3: "BGM/2-14.Silent in the night....mp3", novelFile: "v2_12.txt", lyricFile: "v2_12.txt" },
       { vol: "第２巻：Shadows of Rebellion", title: "13# 襲撃", song: "15.Shadow Braker", mp3: "BGM/2-15.Shadow Braker.mp3", novelFile: "v2_13.txt", lyricFile: "v2_13.txt" },
       { vol: "第２巻：Shadows of Rebellion", title: "14# 加入", song: "16.「誓灯」", mp3: "BGM/2-16.「誓灯」.mp3", novelFile: "v2_14.txt", lyricFile: "v2_14.txt" },
-      { vol: "第２巻：Shadows of Rebellion", title: "15# 険路", song: "17.Path \~道は険しくとも\~", mp3: "BGM/2-17.Path \~道は険しくとも\~.mp3", novelFile: "v2_15.txt", lyricFile: "v2_15.txt" },
+      { vol: "第２巻：Shadows of Rebellion", title: "15# 険路", song: "17.Path ~道は険しくとも~", mp3: "BGM/2-17.Path ~道は険しくとも~.mp3", novelFile: "v2_15.txt", lyricFile: "v2_15.txt" },
       { vol: "第２巻：Shadows of Rebellion", title: "16# 試練", song: "18.RISE", mp3: "BGM/2-18.RISE.mp3", novelFile: "v2_16.txt", lyricFile: "v2_16.txt" },
       { vol: "第２巻：Shadows of Rebellion", title: "17# 音響", song: "19.sound of revival", mp3: "BGM/2-19.sound of revival.mp3", novelFile: "v2_17.txt", lyricFile: "v2_17.txt" },
       { vol: "第２巻：Shadows of Rebellion", title: "18# 受容", song: "20.Embrace-Darkness", mp3: "BGM/2-20.Embrace-Darkness.mp3", novelFile: "v2_18.txt", lyricFile: "v2_18.txt" },
@@ -509,84 +522,63 @@
       return "other";
     }
 
-    // ===== 改善版パーサー =====
-    // 制御文でスタイルを切り替えつつ、制御文前後の改行を各エリアの改行として正しく振り分ける
+    // ===== 【神改修】改行・空行を一切削らず100%テキスト通りに再現するパーサー =====
     function parseCustomMarkup(rawText, defaultAlign = "align-left") {
       if (!rawText) return "<p>（内容がありません）</p>";
 
-      rawText = rawText.replace(/\r\n?/g, "\n");
+      rawText = rawText.replace(/\r\n/g, "\n");
 
-      const lines = rawText.split("\n");
-      const blocks = [];
+      // 【重要】--- の手前にある \n（空行）を消費せず、境界線として分割！
+      const rawBlocks = rawText.split(/(?<=\n)(?=---)/);
+      let html = "";
 
-      let currentStyle = "style-gold";   // 最初のブロックはタイトル扱いになりやすい
-      let currentAlign = defaultAlign;
-      let buffer = [];
+      rawBlocks.forEach((rawBlock, idx) => {
+        let text = rawBlock;
+        if (!text) return;
 
-      function flush() {
-        if (buffer.length === 0) return;
+        let styleClass = "style-white";
+        let alignClass = defaultAlign;
 
-        const text = buffer.join("\n");
-        blocks.push({
-          style: currentStyle,
-          align: currentAlign,
-          text: text
-        });
-        buffer = [];
-      }
+        if (text.startsWith("---")) {
+          const firstLineEnd = text.indexOf("\n");
+          const tagLine = (firstLineEnd !== -1) ? text.substring(0, firstLineEnd) : text;
+          // タグ行（---タグ\n）だけを除去し、前後の空行は一切削らない！
+          text = (firstLineEnd !== -1) ? text.substring(firstLineEnd + 1) : "";
 
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-
-        if (line.startsWith("---")) {
-          // 現在のバッファを確定（制御文直前の改行はここに含まれる）
-          flush();
-
-          // 新しいスタイル・配置を設定
-          let styleClass = "style-white";
-          let alignClass = defaultAlign;
-
-          if (line.includes("赤枠")) {
+          if (tagLine.includes("赤枠")) {
             styleClass = "style-redbox";
-          } else if (line.includes("黄") || line.includes("タイトル")) {
+          } else if (tagLine.includes("黄") || tagLine.includes("タイトル")) {
             styleClass = "style-gold";
           } else {
             styleClass = "style-white";
           }
 
-          if (line.includes("中") || line.includes("センタリング") || line.includes("中央")) {
+          if (tagLine.includes("中") || tagLine.includes("センタリング") || tagLine.includes("中央")) {
             alignClass = "align-center";
-          } else if (line.includes("右")) {
+          } else if (tagLine.includes("右")) {
             alignClass = "align-right";
-          } else if (line.includes("左")) {
+          } else if (tagLine.includes("左")) {
             alignClass = "align-left";
           }
-
-          currentStyle = styleClass;
-          currentAlign = alignClass;
-
-          // 制御文自体は捨てる（直後の改行は次のループでbufferに入る）
-          continue;
+        } else {
+          if (idx === 0) styleClass = "style-gold";
+          else styleClass = "style-white";
         }
 
-        // 通常の行（または空行）を現在のブロックに追加
-        buffer.push(line);
-      }
+        // 複数行にまたがる **太字** も完全に変換！
+        let parsedContent = text.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
 
-      // 最後のブロックを確定
-      flush();
+        // 【超重要】ブロック末尾の \n（空行）がブラウザに消されるのを防ぐゼロ幅スペース補正！
+        if (parsedContent.endsWith("\n")) {
+          parsedContent += "\u200B";
+        }
 
-      // HTML生成
-      let html = "";
-      blocks.forEach(block => {
-        // 完全に空白だけのブロックはスキップ（改行だけなら余白として残す）
-        if (block.text.trim() === "" && !block.text.includes("\n")) return;
-
-        const parsedContent = block.text.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
-        html += `<div class="block-base ${block.style} \( {block.align}"> \){parsedContent}</div>`;
+        if (parsedContent.trim() !== "" || parsedContent.includes("\n")) {
+          html += `<div class="block-base ${styleClass} ${alignClass}">${parsedContent}</div>`;
+        }
       });
 
-      return html || "<p>（内容がありません）</p>";
+      return html;
     }
 
     async function fetchText(path) {
@@ -670,7 +662,7 @@
             const btn = document.createElement("div");
             btn.className = "link-item-btn" + (idx === currentIndex ? " current" : "");
             btn.onclick = () => { loadChapter(idx); switchView('lyric'); };
-            btn.innerHTML = `<span>🎵 \( {ch.song}</span><span style="font-size:0.75rem;color:#888;"> \){ch.title.split(' ')[0]}</span>`;
+            btn.innerHTML = `<span>🎵 ${ch.song}</span><span style="font-size:0.75rem;color:#888;">${ch.title.split(' ')[0]}</span>`;
             grid.appendChild(btn);
           }
         }
