@@ -141,7 +141,7 @@
       letter-spacing: 0.05em;
     }
 
-    /* 【改修】余計なCSSマージンは完全ゼロ！余白はテキスト内の空行に100%連動 */
+    /* 余白はテキストの空行に100%連動 */
     .block-base {
       white-space: pre-wrap;
       line-height: 2.1;
@@ -164,7 +164,7 @@
     .style-redbox {
       background: rgba(201, 42, 42, 0.05);
       border-left: 3px solid var(--accent-red);
-      padding: 12px 18px;
+      padding: 10px 18px;
       font-size: 0.92em;
       color: #ccc;
       margin: 0;
@@ -389,7 +389,6 @@
   </div>
 
   <script>
-    // ===== 全体インデックス定義（順序：第１巻 ➡️ 第２巻 ➡️ 考察 ➡️ 外伝） =====
     const chapters = [
       // ----------------- 第１巻 -----------------
       { vol: "第１巻：Dawn Beyond Shadows", title: "第１巻 もくじ", song: "1.Dawn Beyond Shadows", mp3: "BGM/1-01.Dawn Beyond Shadows.mp3", novelFile: "v1_00.txt", lyricFile: "v1_00.txt", isTop: true },
@@ -481,7 +480,7 @@
         ]
       },
 
-      // ----------------- 【本編直後】巻末考察アーカイブ -----------------
+      // ----------------- 巻末考察アーカイブ -----------------
       { vol: "巻末アーカイブ：AI徹底考察", title: "考察①：総評（調和の物語構造）", song: "", mp3: "", novelFile: "review_01.txt", lyricFile: "" },
       { vol: "巻末アーカイブ：AI徹底考察", title: "考察②：カニの変遷と奇跡の軌跡", song: "", mp3: "", novelFile: "review_02.txt", lyricFile: "" },
       { vol: "巻末アーカイブ：AI徹底考察", title: "考察③：キャラクター別名（迷）シーン大集合！", song: "", mp3: "", novelFile: "review_03.txt", lyricFile: "" },
@@ -509,60 +508,80 @@
       return "other";
     }
 
-    // ===== 【神改修】改行・空行を一切削らず100%テキスト通りに再現するパーサー =====
+    // ===== 【さやかさん仕様書 100%完全準拠パーサー】 =====
     function parseCustomMarkup(rawText, defaultAlign = "align-left") {
       if (!rawText) return "<p>（内容がありません）</p>";
 
       rawText = rawText.replace(/\r\n/g, "\n");
+      const lines = rawText.split("\n");
 
-      // 【重要】--- の手前にある \n（空行）を消費せず、境界線として分割！
-      const rawBlocks = rawText.split(/(?<=\n)(?=---)/);
-      let html = "";
+      let blocks = [];
+      let currentStyle = "style-white";
+      let currentAlign = defaultAlign;
+      let currentLines = [];
 
-      rawBlocks.forEach((rawBlock, idx) => {
-        let text = rawBlock;
-        if (!text) return;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
 
-        let styleClass = "style-white";
-        let alignClass = defaultAlign;
+        // 制御文（---で始まる行）の検知
+        if (line.startsWith("---")) {
+          // 直前のブロックを確定して保存（直前の改行・空行はそのまま末尾に残る）
+          if (currentLines.length > 0) {
+            blocks.push({
+              style: currentStyle,
+              align: currentAlign,
+              lines: currentLines
+            });
+            currentLines = [];
+          }
 
-        if (text.startsWith("---")) {
-          const firstLineEnd = text.indexOf("\n");
-          const tagLine = (firstLineEnd !== -1) ? text.substring(0, firstLineEnd) : text;
-          // タグ行（---タグ\n）だけを除去し、前後の空行は一切削らない！
-          text = (firstLineEnd !== -1) ? text.substring(firstLineEnd + 1) : "";
-
-          if (tagLine.includes("赤枠")) {
-            styleClass = "style-redbox";
-          } else if (tagLine.includes("黄") || tagLine.includes("タイトル")) {
-            styleClass = "style-gold";
+          // 制御文の解析
+          if (line.includes("赤枠")) {
+            currentStyle = "style-redbox";
+          } else if (line.includes("黄") || line.includes("タイトル")) {
+            currentStyle = "style-gold";
           } else {
-            styleClass = "style-white";
+            currentStyle = "style-white";
           }
 
-          if (tagLine.includes("中") || tagLine.includes("センタリング") || tagLine.includes("中央")) {
-            alignClass = "align-center";
-          } else if (tagLine.includes("右")) {
-            alignClass = "align-right";
-          } else if (tagLine.includes("左")) {
-            alignClass = "align-left";
+          if (line.includes("中") || line.includes("センタリング") || line.includes("中央")) {
+            currentAlign = "align-center";
+          } else if (line.includes("右")) {
+            currentAlign = "align-right";
+          } else if (line.includes("左")) {
+            currentAlign = "align-left";
           }
-        } else {
-          if (idx === 0) styleClass = "style-gold";
-          else styleClass = "style-white";
+
+          // 制御文そのものは完全に除去（スキップ）
+          continue;
         }
 
-        // 複数行にまたがる **太字** も完全に変換！
-        let parsedContent = text.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>');
+        // 通常の行（空行含む）は、そのまま現在のブロックに追加
+        currentLines.push(line);
+      }
 
-        // 【超重要】ブロック末尾の \n（空行）がブラウザに消されるのを防ぐゼロ幅スペース補正！
-        if (parsedContent.endsWith("\n")) {
-          parsedContent += "\u200B";
+      // 最後のブロックを追加
+      if (currentLines.length > 0) {
+        blocks.push({
+          style: currentStyle,
+          align: currentAlign,
+          lines: currentLines
+        });
+      }
+
+      // 各ブロックをHTML化
+      let html = "";
+      blocks.forEach(block => {
+        let content = block.lines
+          .map(l => l.replace(/\*\*([\s\S]*?)\*\*/g, '<strong>$1</strong>'))
+          .join("\n");
+
+        // 末尾の空行がブラウザで消えるのを防ぐ補正
+        if (content.endsWith("\n")) {
+          content += "\u200B";
         }
 
-        if (parsedContent.trim() !== "" || parsedContent.includes("\n")) {
-          html += `<div class="block-base ${styleClass} ${alignClass}">${parsedContent}</div>`;
-        }
+        html += `<div class="block-base ${block.style} ${block.align}">${content}</div>`;
       });
 
       return html;
@@ -656,7 +675,6 @@
       });
     }
 
-    // 小説側フッター：その巻の章一覧リスト常設
     function renderChapterGrid() {
       const grid = document.getElementById("chapter-grid");
       const header = document.getElementById("book-chapter-header");
@@ -774,7 +792,7 @@
         }
       }
 
-      // 小説本文読み込み（完全空行維持パーサー適用）
+      // 小説本文読み込み（さやかさん仕様書パーサー）
       document.getElementById("novel-text").innerHTML = "<p>読み込み中...</p>";
       const rawNovel = await fetchText("novel/" + ch.novelFile);
       document.getElementById("novel-text").innerHTML = parseCustomMarkup(rawNovel, "align-left");
