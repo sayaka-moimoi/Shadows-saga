@@ -102,6 +102,31 @@
       font-weight: bold;
     }
     .audio-song-name { font-size: 0.95rem; font-weight: bold; color: var(--accent-gold); }
+
+    /* ===== 【新機能】インチキレトロイコライザー ===== */
+    .retro-equalizer {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 14px;
+      margin-left: 6px;
+    }
+    .eq-bar {
+      width: 3px;
+      background: #00ff66;
+      border-radius: 1px;
+      height: 3px;
+      transition: height 0.1s;
+    }
+    .retro-equalizer.playing .bar-1 { animation: eqAnim1 0.4s infinite alternate ease-in-out; }
+    .retro-equalizer.playing .bar-2 { animation: eqAnim2 0.3s infinite alternate ease-in-out; }
+    .retro-equalizer.playing .bar-3 { animation: eqAnim3 0.5s infinite alternate ease-in-out; }
+    .retro-equalizer.playing .bar-4 { animation: eqAnim4 0.35s infinite alternate ease-in-out; }
+    @keyframes eqAnim1 { from { height: 3px; } to { height: 14px; } }
+    @keyframes eqAnim2 { from { height: 5px; } to { height: 12px; } }
+    @keyframes eqAnim3 { from { height: 2px; } to { height: 15px; } }
+    @keyframes eqAnim4 { from { height: 4px; } to { height: 10px; } }
+
     audio { width: 100%; height: 38px; filter: invert(0.9) hue-rotate(180deg); }
     .no-audio-msg { font-size: 0.8rem; color: #777; font-style: italic; }
 
@@ -141,7 +166,6 @@
       letter-spacing: 0.05em;
     }
 
-    /* 空行・改行を完全連動 */
     .block-base {
       white-space: pre-wrap;
       line-height: 2.1;
@@ -170,7 +194,7 @@
       padding: 25px 16px;
     }
 
-    /* ===== 【90年代風】レトロデジタルアクセスカウンター ===== */
+    /* レトロアクセスカウンター */
     .retro-counter-wrap {
       display: flex;
       flex-direction: column;
@@ -202,7 +226,7 @@
       line-height: 28px;
       text-align: center;
       background: #0a0a0a;
-      color: #00ff66; /* 懐かしの緑LEDデジタル文字 */
+      color: #00ff66;
       font-size: 1.25rem;
       font-weight: bold;
       border: 1px inset #222;
@@ -210,7 +234,62 @@
       text-shadow: 0 0 4px #00ff66;
     }
 
-    /* ===== 【キリ番ポップアップ】モーダル ===== */
+    /* ===== 【新機能】Web拍手エリア ===== */
+    .clap-container {
+      margin-top: 35px;
+      padding: 20px 16px;
+      background: #111116;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      text-align: center;
+      font-family: sans-serif;
+    }
+    .btn-clap {
+      background: #20202e;
+      border: 1px solid var(--accent-gold);
+      color: var(--accent-gold);
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-size: 0.95rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s;
+    }
+    .btn-clap:hover {
+      background: var(--accent-gold);
+      color: #000;
+      transform: scale(1.03);
+    }
+    .clap-badge {
+      background: var(--accent-red);
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .clap-note {
+      font-size: 0.75rem;
+      color: #777;
+      margin-top: 8px;
+    }
+    .clap-response-card {
+      margin-top: 15px;
+      padding: 14px 18px;
+      background: #1a1a26;
+      border: 1px dashed var(--accent-gold);
+      border-radius: 6px;
+      font-size: 0.9rem;
+      line-height: 1.8;
+      color: #fff;
+      display: none;
+      animation: popIn 0.25s ease;
+      text-align: left;
+    }
+
+    /* キリ番ポップアップモーダル */
     .kiriban-overlay {
       position: fixed;
       top: 0; left: 0;
@@ -239,26 +318,14 @@
       from { transform: scale(0.8); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
-    .kiriban-header {
-      font-size: 1.2rem;
-      color: var(--accent-red);
-      font-weight: bold;
-      margin-bottom: 12px;
-      letter-spacing: 1px;
-    }
-    .kiriban-num-text {
-      font-size: 1.15rem;
-      color: #fff;
-      margin-bottom: 15px;
-      line-height: 1.6;
-    }
-    .kiriban-highlight {
+    .kiriban-row-1 {
+      font-size: 1.3rem;
       color: var(--accent-gold);
       font-weight: bold;
-      font-size: 1.4rem;
+      margin-bottom: 12px;
+      letter-spacing: 2px;
     }
-    /* 【神AA】ｹﾞﾄｰ⊂(ﾟДﾟ⊂⌒｀つ≡≡≡≡ｽﾞｻｰ */
-    .kiriban-aa {
+    .kiriban-row-2 {
       background: #09090d;
       border: 1px dashed var(--border-color);
       color: #00ff66;
@@ -266,13 +333,31 @@
       padding: 12px;
       font-size: 0.95rem;
       border-radius: 4px;
-      margin: 15px 0;
+      margin: 12px 0 16px;
       white-space: nowrap;
       overflow-x: auto;
     }
-    .kiriban-sub {
-      font-size: 0.85rem;
-      color: #aaa;
+    .kiriban-row-3 {
+      font-size: 1.0rem;
+      color: #ddd;
+      margin-bottom: 4px;
+    }
+    .kiriban-row-4 {
+      font-size: 1.45rem;
+      color: var(--accent-gold);
+      font-weight: bold;
+      margin-bottom: 4px;
+      letter-spacing: 1px;
+    }
+    .kiriban-row-5 {
+      font-size: 1.1rem;
+      color: #fff;
+      font-weight: bold;
+      margin-bottom: 14px;
+    }
+    .kiriban-row-6 {
+      font-size: 0.8rem;
+      color: #888;
       margin-bottom: 20px;
     }
     .btn-kiriban-close {
@@ -284,9 +369,7 @@
       font-size: 0.9rem;
       font-weight: bold;
       cursor: pointer;
-      transition: opacity 0.2s;
     }
-    .btn-kiriban-close:hover { opacity: 0.8; }
 
     .omake-selector {
       display: flex;
@@ -450,17 +533,15 @@
     <div class="toc-container" id="accordion-toc"></div>
   </aside>
 
-  <!-- キリ番ポップアップモーダル（ズサーAA搭載！） -->
+  <!-- 【さやかさん指定の完全行構成】キリ番ポップアップモーダル -->
   <div id="kiriban-modal" class="kiriban-overlay" style="display: none;">
     <div class="kiriban-card">
-      <div class="kiriban-header">🎉 キリ番ゲット！！</div>
-      <div class="kiriban-num-text">
-        あなたは記念すべき<br>
-        <span id="kiriban-num" class="kiriban-highlight">【44よんよん！】</span><br>
-        人目のキツネ様DEATH！！🤘🦊
-      </div>
-      <div class="kiriban-aa">ｹﾞﾄｰ⊂(ﾟДﾟ⊂⌒｀つ≡≡≡≡ｽﾞｻｰ</div>
-      <div class="kiriban-sub">BBSにメッセージをカキコしてネ.ᐟ(嘘)</div>
+      <div class="kiriban-row-1">💐キリ番💐</div>
+      <div class="kiriban-row-2" id="kiriban-aa-text">ｹﾞﾄｰ⊂(ﾟДﾟ⊂⌒｀つ≡≡≡≡ｽﾞｻｰ</div>
+      <div class="kiriban-row-3">あなたは記念すべき</div>
+      <div class="kiriban-row-4" id="kiriban-num">【44よんよん】人目</div>
+      <div class="kiriban-row-5">のキツネ様DEATH！！🤘🦊</div>
+      <div class="kiriban-row-6">BBSにメッセージをカキコしてネ.ᐟ(嘘)</div>
       <button class="btn-kiriban-close" onclick="closeKiribanModal()">閉じる</button>
     </div>
   </div>
@@ -475,6 +556,13 @@
         <div class="audio-title-wrap">
           <span class="audio-badge">BGM</span>
           <span class="audio-song-name" id="song-name">曲名</span>
+          <!-- 【新機能】インチキレトロイコライザー（再生中カチャカチャ動く！） -->
+          <div class="retro-equalizer" id="retro-eq">
+            <span class="eq-bar bar-1"></span>
+            <span class="eq-bar bar-2"></span>
+            <span class="eq-bar bar-3"></span>
+            <span class="eq-bar bar-4"></span>
+          </div>
         </div>
         <span class="no-audio-msg" id="audio-status"></span>
       </div>
@@ -490,13 +578,21 @@
     <div class="view-content active" id="content-book">
       <article class="novel-body" id="novel-text"></article>
 
-      <!-- 【スクショの緑の丸の位置！】90年代風レトロアクセスカウンター -->
+      <!-- 90年代レトロアクセスカウンター -->
       <div id="retro-counter-area" class="retro-counter-wrap" style="display: none;">
         <div class="counter-label">★ TOTAL VISITOR ★</div>
-        <!-- タップするとキリ番画面をテスト表示できる裏技付き！ -->
         <div class="counter-display" id="counter-digits" onclick="previewKiriban()" title="タップでキリ番プレビュー！">
           <span class="counter-digit">0</span><span class="counter-digit">0</span><span class="counter-digit">0</span><span class="counter-digit">0</span><span class="counter-digit">4</span><span class="counter-digit">4</span>
         </div>
+      </div>
+
+      <!-- 【新機能】Web拍手エリア（小説側） -->
+      <div class="clap-container">
+        <button class="btn-clap" onclick="sendClap()">
+          👏🏻✨ Web拍手を送る <span class="clap-badge" id="clap-count-display">0</span>
+        </button>
+        <div class="clap-note">※メッセージはAIが自動で出してます(笑)</div>
+        <div class="clap-response-card" id="clap-popup-book"></div>
       </div>
 
       <div class="link-list-card" id="book-chapter-card">
@@ -509,6 +605,16 @@
     <div class="view-content" id="content-lyric">
       <div class="omake-selector" id="omake-selector" style="display: none;"></div>
       <div class="lyrics-body" id="lyrics-text"></div>
+
+      <!-- 【新機能】Web拍手エリア（歌詞側） -->
+      <div class="clap-container">
+        <button class="btn-clap" onclick="sendClap()">
+          👏🏻✨ この曲に拍手を送る <span class="clap-badge" id="clap-count-display-lyric">0</span>
+        </button>
+        <div class="clap-note">※メッセージはAIが自動で出してます(笑)</div>
+        <div class="clap-response-card" id="clap-popup-lyric"></div>
+      </div>
+
       <div class="link-list-card" id="tracklist-container">
         <div class="link-list-header" id="tracklist-header" style="color: var(--accent-red);">💿 収録曲リスト（タップで移動）</div>
         <div class="link-grid" id="track-grid"></div>
@@ -667,19 +773,19 @@
           }
 
           if (line.includes("赤枠")) {
-            styleClass = "style-redbox";
+            currentStyle = "style-redbox";
           } else if (line.includes("黄") || line.includes("タイトル")) {
-            styleClass = "style-gold";
+            currentStyle = "style-gold";
           } else {
-            styleClass = "style-white";
+            currentStyle = "style-white";
           }
 
           if (line.includes("中") || line.includes("センタリング") || line.includes("中央")) {
-            alignClass = "align-center";
+            currentAlign = "align-center";
           } else if (line.includes("右")) {
-            alignClass = "align-right";
+            currentAlign = "align-right";
           } else if (line.includes("左")) {
-            alignClass = "align-left";
+            currentAlign = "align-left";
           }
 
           continue;
@@ -712,9 +818,47 @@
       return html;
     }
 
-    // ===== 無料カウンター ＆ よんよん！キリ番判定 =====
-    let currentVisitorCount = 44; // プレビュー用初期値
+    // ===== ランダムAAリスト（キリ番用） =====
+    const kiribanAAList = [
+      "ｹﾞﾄｰ⊂(ﾟДﾟ⊂⌒｀つ≡≡≡≡ｽﾞｻｰ",
+      "ｹﾞﾄ━━━━(ﾟ∀ﾟ)━━━━!!!!",
+      "ｹﾞﾄｰ(ﾟ∀ﾟ)神のﾖｶｰﾝ",
+      "( ･∀･)つ━☆・*。ｹﾞﾄｰ",
+      "(　・∀・)―――C＜―_-) ｹﾞﾄｰ",
+      "⊂二二二（　＾ω＾）二⊃ﾌﾞｰﾝ ｹﾞﾄｰ",
+      "(っ'-')╮ =͟͟͞͞◒ GETだぜ！",
+      "(σ・∀・)σｹﾞｯﾂ!!",
+      "ｹﾞ━━(σ・∀・)σ━━ｯﾂ!!!!",
+      "(σﾟдﾟ)σｹﾞｯﾂ ｱｰﾝﾄﾞ;y=ｰ( ﾟдﾟ)・∵ﾀｰﾝ",
+      "ｷﾀ━(ﾟ∀ﾟ)━!",
+      "(ง°̀ﾛ°́)ง💛ｷﾀー!!✨",
+      "ｷﾀ━٩(｡•ω•｡)﻿و━!!",
+      "ｷﾀ━━ヾ(≧∀≦)ﾉ━━!!",
+      "ｷﾀｷﾀｷﾀｷﾀ━(ﾟ∀ﾟ≡(ﾟ∀ﾟ≡ﾟ∀ﾟ)≡ﾟ∀ﾟ)━!!",
+      "ｷﾀ━━´･∀･)`･з･)*'◇').°ー°)`∀´)━━ｯ!!",
+      "ｷﾀﾜｧ━━━(n‘∀‘)η━━━!!!!!!",
+      "ｷﾀ━━━━( ˇωˇ )━━━━!!",
+      "(ﾟ∀ﾟ)o彡゜ｷﾘﾊﾞﾝ！ｷﾘﾊﾞﾝ！",
+      "ｷﾀ─wwﾍ√ﾚvv~(ﾟ∀ﾟ)─wwﾍ√ﾚvv~─!!!!",
+      "\\m/(>_<)\\m/ ｷﾀｰ!!"
+    ];
 
+    // ===== Web拍手お礼ランダムメッセージ =====
+    const clapMessages = [
+      "モアメタル：「パチパチありがとー！ お礼に美味しいお菓子（回らないお寿司でも可）をあげるね！٩(ˊᗜˋ*)و🍣」",
+      "スーメタル：「拍手ありがとう！ 音楽は心をつなぐ力だからね。……あれ？ 今の拍手、私どのパートで受けるんだっけ？」",
+      "モモメタル：「拍手ありがとうございます！ 旅籠のお茶のおかわり、すぐお持ちしますね！🍵」",
+      "サヤメタ：「……拍手など不要だ。……だが、悪く……ない。（そっぽを向いて口元が緩む）」",
+      "かいとん。姐さん：「ありがとね。ほら、辛麺でも啜って一杯呑んでいきな（徳利）」",
+      "フラゴドン師匠：「喝！！ ……じゃが、拍手をもらうのは悪くないのぅ。」",
+      "ユミックス女将：「アンタいい人だねぇ！ 今日は腕によりをかけてご馳走作るから、ゆっくり泊まってきな！」",
+      "【超激レア（1%）】カニ：「（チョキチョキ……カニ折のハサミが愛を切り開いた！）🦀✂️✨」"
+    ];
+
+    let currentVisitorCount = 44;
+    let currentClapCount = 0;
+
+    // カウンター＆キリ番起動
     async function initCounter() {
       try {
         const res = await fetch("https://api.counterapi.dev/v1/sayaka-moimoi-shadows-saga/visits/up");
@@ -731,7 +875,6 @@
         currentVisitorCount = localCount;
       }
 
-      // レトロな6桁カチカチ四角カウンター描画
       const countStr = String(currentVisitorCount).padStart(6, "0");
       const digitsContainer = document.getElementById("counter-digits");
       if (digitsContainer) {
@@ -744,10 +887,16 @@
         sessionStorage.setItem(sessionKey, "true");
         showKiribanModal(currentVisitorCount);
       }
+
+      // 拍手数の初期ロード
+      initClapCount();
     }
 
     function showKiribanModal(count) {
-      document.getElementById("kiriban-num").innerText = `【${count}よんよん！】`;
+      document.getElementById("kiriban-num").innerText = `【${count}よんよん】人目`;
+      // ランダムAA選定
+      const randomAA = kiribanAAList[Math.floor(Math.random() * kiribanAAList.length)];
+      document.getElementById("kiriban-aa-text").innerText = randomAA;
       document.getElementById("kiriban-modal").style.display = "flex";
     }
 
@@ -755,9 +904,52 @@
       document.getElementById("kiriban-modal").style.display = "none";
     }
 
-    // カウンターをタップした時のキリ番プレビュー裏技！
     function previewKiriban() {
       showKiribanModal(currentVisitorCount);
+    }
+
+    // ===== Web拍手機能 =====
+    async function initClapCount() {
+      try {
+        const res = await fetch("https://api.counterapi.dev/v1/sayaka-moimoi-shadows-saga/claps");
+        if (res.ok) {
+          const data = await res.json();
+          currentClapCount = data.count;
+        } else {
+          throw new Error();
+        }
+      } catch (e) {
+        currentClapCount = parseInt(localStorage.getItem("shadows_saga_claps") || "0");
+      }
+      updateClapDisplay();
+    }
+
+    function updateClapDisplay() {
+      document.getElementById("clap-count-display").innerText = currentClapCount;
+      document.getElementById("clap-count-display-lyric").innerText = currentClapCount;
+    }
+
+    async function sendClap() {
+      currentClapCount++;
+      updateClapDisplay();
+      localStorage.setItem("shadows_saga_claps", currentClapCount);
+
+      // 非同期でAPIに送信（失敗しても画面は止まらない）
+      fetch("https://api.counterapi.dev/v1/sayaka-moimoi-shadows-saga/claps/up").catch(() => {});
+
+      // ランダムお礼メッセージ選定
+      let chosenMsg;
+      if (Math.random() < 0.02) {
+        chosenMsg = clapMessages[clapMessages.length - 1]; // 激レアカニ
+      } else {
+        const normalList = clapMessages.slice(0, -1);
+        chosenMsg = normalList[Math.floor(Math.random() * normalList.length)];
+      }
+
+      const activePopupId = (currentView === 'book') ? "clap-popup-book" : "clap-popup-lyric";
+      const popup = document.getElementById(activePopupId);
+      popup.innerHTML = `<div>${chosenMsg}</div>`;
+      popup.style.display = "block";
     }
 
     async function fetchText(path) {
@@ -950,7 +1142,11 @@
       const audioCard = document.getElementById("audio-card");
       const player = document.getElementById("audio-player");
       const status = document.getElementById("audio-status");
+      const eq = document.getElementById("retro-eq");
       
+      // イコライザー停止
+      if (eq) eq.classList.remove("playing");
+
       if (!ch.isOmake) {
         if (ch.mp3 && ch.mp3.trim() !== "") {
           audioCard.style.display = "block";
@@ -965,10 +1161,16 @@
         }
       }
 
+      // 小説本文読み込み
       document.getElementById("novel-text").innerHTML = "<p>読み込み中...</p>";
       const rawNovel = await fetchText("novel/" + ch.novelFile);
       document.getElementById("novel-text").innerHTML = parseCustomMarkup(rawNovel, "align-left");
 
+      // 拍手メッセージ枠を初期化（非表示）
+      document.getElementById("clap-popup-book").style.display = "none";
+      document.getElementById("clap-popup-lyric").style.display = "none";
+
+      // 歌詞読み込み
       const viewTabs = document.getElementById("view-tabs");
       const hasLyric = Boolean(ch.isOmake || (ch.lyricFile && ch.lyricFile.trim() !== ""));
 
@@ -992,7 +1194,7 @@
         switchView('book');
       }
 
-      // 目次ページのときだけレトロカウンターを表示！
+      // 目次ページのときだけレトロカウンターを表示
       const counterArea = document.getElementById("retro-counter-area");
       if (ch.isTop) {
         counterArea.style.display = "flex";
@@ -1030,10 +1232,22 @@
       document.getElementById("font-size-label").innerText = fontSizeLabels[currentFontSizeIdx];
     }
 
+    // 音楽再生中のイコライザー連動
+    function setupEqualizer() {
+      const player = document.getElementById("audio-player");
+      const eq = document.getElementById("retro-eq");
+      if (player && eq) {
+        player.addEventListener("play", () => eq.classList.add("playing"));
+        player.addEventListener("pause", () => eq.classList.remove("playing"));
+        player.addEventListener("ended", () => eq.classList.remove("playing"));
+      }
+    }
+
     function init() {
       renderAccordionToc();
       loadChapter(0);
-      initCounter(); // アクセスカウンター起動！
+      initCounter();
+      setupEqualizer();
     }
     init();
   </script>
