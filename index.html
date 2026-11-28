@@ -83,7 +83,7 @@
       border-left: 4px solid var(--accent-red);
       border-radius: 6px;
       padding: 14px 18px;
-      margin-bottom: 25px;
+      margin-bottom: 10px;
       font-family: sans-serif;
     }
     .audio-info {
@@ -103,7 +103,7 @@
     }
     .audio-song-name { font-size: 0.95rem; font-weight: bold; color: var(--accent-gold); }
 
-    /* ===== 【改修】8本バー・インチキレトロイコライザー（倍幅！） ===== */
+    /* ===== 8本バー・インチキレトロイコライザー（倍幅！） ===== */
     .retro-equalizer {
       display: inline-flex;
       align-items: flex-end;
@@ -139,10 +139,16 @@
     audio { width: 100%; height: 38px; filter: invert(0.9) hue-rotate(180deg); }
     .no-audio-msg { font-size: 0.8rem; color: #777; font-style: italic; }
 
+    /* 曲バナー直下のランキングボタンバー */
+    .ranking-bar {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+
     .view-tabs {
       display: flex;
       gap: 10px;
-      margin-bottom: 25px;
+      margin-bottom: 20px;
       border-bottom: 1px solid var(--border-color);
       padding-bottom: 10px;
       font-family: sans-serif;
@@ -209,7 +215,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      margin: 25px 0 25px;
+      margin: 25px 0 30px;
       font-family: "Courier New", Courier, monospace;
     }
     .counter-label {
@@ -245,11 +251,10 @@
 
     /* ランキングを開くボタン */
     .btn-ranking-open {
-      margin-top: 14px;
       background: linear-gradient(135deg, #251a1d, #1a1a26);
       border: 1px solid var(--accent-gold);
       color: var(--accent-gold);
-      padding: 9px 20px;
+      padding: 8px 20px;
       border-radius: 25px;
       font-size: 0.85rem;
       font-weight: bold;
@@ -266,10 +271,10 @@
       transform: translateY(-1px);
     }
 
-    /* ===== 曲別「いいね！」（Web拍手）エリア（歌詞側限定） ===== */
+    /* ===== 【改修】曲別「いいね！」エリア（タブと歌詞枠の間） ===== */
     .clap-container {
-      margin-top: 30px;
-      padding: 20px 16px;
+      margin-bottom: 18px;
+      padding: 12px 16px;
       background: #111116;
       border: 1px solid var(--border-color);
       border-radius: 6px;
@@ -280,9 +285,9 @@
       background: #20202e;
       border: 1px solid var(--accent-gold);
       color: var(--accent-gold);
-      padding: 10px 24px;
+      padding: 9px 22px;
       border-radius: 30px;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
       font-weight: bold;
       cursor: pointer;
       display: inline-flex;
@@ -303,18 +308,19 @@
       border-radius: 10px;
     }
     .clap-note {
-      font-size: 0.75rem;
-      color: #777;
+      font-size: 0.72rem;
+      color: #888;
       margin-top: 8px;
+      text-align: right;
     }
     .clap-response-card {
-      margin-top: 15px;
-      padding: 14px 18px;
+      margin-top: 12px;
+      padding: 14px 16px;
       background: #1a1a26;
       border: 1px dashed var(--accent-gold);
       border-radius: 6px;
-      font-size: 0.9rem;
-      line-height: 1.8;
+      font-size: 0.88rem;
+      line-height: 1.75;
       color: #fff;
       display: none;
       animation: popIn 0.25s ease;
@@ -403,7 +409,7 @@
       cursor: pointer;
     }
 
-    /* ===== 【新機能】全曲いいねランキングモーダル ===== */
+    /* ===== 全曲いいねランキングモーダル ===== */
     .ranking-card {
       background: #15151e;
       border: 2px solid var(--accent-gold);
@@ -536,7 +542,7 @@
       gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .omake-btn {
       background: #1e1e28;
@@ -568,14 +574,6 @@
       margin-bottom: 14px;
       letter-spacing: 1px;
       line-height: 1.5;
-    }
-    .tracklist-header-wrap {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 14px;
     }
     .link-grid {
       display: grid;
@@ -705,7 +703,7 @@
       <button class="btn-icon" onclick="toggleSidebar()">✕</button>
     </div>
     <div class="sidebar-ranking-box">
-      <button class="btn-ranking-open" style="margin-top:0; width:100%; justify-content:center;" onclick="toggleSidebar(); openRankingModal();">
+      <button class="btn-ranking-open" style="width:100%; justify-content:center;" onclick="toggleSidebar(); openRankingModal();">
         🏆 全曲いいねランキング
       </button>
     </div>
@@ -725,7 +723,7 @@
     </div>
   </div>
 
-  <!-- 【新機能】全曲いいねランキングモーダル -->
+  <!-- 全曲いいねランキングモーダル -->
   <div id="ranking-modal" class="kiriban-overlay" style="display: none;" onclick="if(event.target===this) closeRankingModal();">
     <div class="ranking-card">
       <div class="ranking-header">
@@ -751,12 +749,13 @@
       <div class="volume-tag" id="vol-tag">第１巻：Dawn Beyond Shadows</div>
     </div>
 
+    <!-- 曲バナー -->
     <div class="audio-card" id="audio-card">
       <div class="audio-info">
         <div class="audio-title-wrap">
           <span class="audio-badge">BGM</span>
           <span class="audio-song-name" id="song-name">曲名</span>
-          <!-- 【改修】8本バー・インチキレトロイコライザー -->
+          <!-- 8本バー・インチキレトロイコライザー -->
           <div class="retro-equalizer" id="retro-eq">
             <span class="eq-bar bar-1"></span>
             <span class="eq-bar bar-2"></span>
@@ -773,22 +772,26 @@
       <audio id="audio-player" controls preload="metadata" src=""></audio>
     </div>
 
+    <!-- 【改修】曲バナーの直下に配置した全曲ランキングボタン -->
+    <div class="ranking-bar" id="ranking-bar">
+      <button class="btn-ranking-open" onclick="openRankingModal()">🏆 全曲いいねランキングを見る</button>
+    </div>
+
     <div class="view-tabs" id="view-tabs">
       <button class="tab-btn active" id="tab-book" onclick="switchView('book')">📖 小説 (Book)</button>
       <button class="tab-btn" id="tab-lyric" onclick="switchView('lyric')">📜 歌詞 (Lyric)</button>
     </div>
 
-    <!-- 小説エリア（Web拍手は撤廃） -->
+    <!-- 小説エリア -->
     <div class="view-content active" id="content-book">
       <article class="novel-body" id="novel-text"></article>
 
-      <!-- 90年代レトロアクセスカウンター ＆ ランキングボタン -->
+      <!-- 90年代レトロアクセスカウンター -->
       <div id="retro-counter-area" class="retro-counter-wrap" style="display: none;">
         <div class="counter-label">★ TOTAL VISITOR ★</div>
         <div class="counter-display" id="counter-digits" onclick="previewKiriban()" title="タップでキリ番プレビュー！">
           <span class="counter-digit">0</span><span class="counter-digit">0</span><span class="counter-digit">0</span><span class="counter-digit">0</span><span class="counter-digit">0</span><span class="counter-digit">0</span>
         </div>
-        <button class="btn-ranking-open" onclick="openRankingModal()">🏆 全曲いいねランキングを見る</button>
       </div>
 
       <div class="link-list-card" id="book-chapter-card">
@@ -797,25 +800,22 @@
       </div>
     </div>
 
-    <!-- 歌詞エリア（曲別「いいね！」＆ AIお礼メッセージ） -->
+    <!-- 歌詞エリア -->
     <div class="view-content" id="content-lyric">
       <div class="omake-selector" id="omake-selector" style="display: none;"></div>
-      <div class="lyrics-body" id="lyrics-text"></div>
 
-      <!-- 曲ごとのいいね！エリア（歌詞側限定） -->
+      <!-- 【改修】切り替えボタンと歌詞枠の間に配置した曲別いいね！ -->
       <div class="clap-container">
         <button class="btn-clap" onclick="sendSongLike()">
           👏🏻✨ この曲いいね！ <span class="clap-badge" id="clap-count-display-lyric">0</span>
         </button>
-        <div class="clap-note">※メッセージはAIが自動で出してます(笑)</div>
         <div class="clap-response-card" id="clap-popup-lyric"></div>
       </div>
 
+      <div class="lyrics-body" id="lyrics-text"></div>
+
       <div class="link-list-card" id="tracklist-container">
-        <div class="tracklist-header-wrap">
-          <div class="link-list-header" id="tracklist-header" style="color: var(--accent-red); margin-bottom: 0;">💿 収録曲リスト（タップで移動）</div>
-          <button class="btn-ranking-open" style="margin-top:0; padding: 6px 14px; font-size: 0.78rem;" onclick="openRankingModal()">🏆 全曲ランキング</button>
-        </div>
+        <div class="link-list-header" id="tracklist-header" style="color: var(--accent-red);">💿 収録曲リスト（タップで移動）</div>
         <div class="link-grid" id="track-grid"></div>
       </div>
     </div>
@@ -1045,16 +1045,31 @@
       "\\m/(>_<)\\m/ ｷﾀｰ!!"
     ];
 
-    // ===== 曲別いいね！お礼ランダムメッセージ =====
+    // ===== 曲別いいね！お礼ランダムメッセージ（本編・外伝・メイト仲間オマージュ全23種） =====
     const clapMessages = [
-      "モアメタル：「パチパチありがとー！ お礼に美味しいお菓子（回らないお寿司でも可）をあげるね！٩(ˊᗜˋ*)و🍣」",
-      "スーメタル：「いいねありがとう！ 音楽は心をつなぐ力だからね。……あれ？ 今の拍手、私どのパートで受けるんだっけ？」",
-      "モモメタル：「いいねありがとうございます！ 旅籠のお茶のおかわり、すぐお持ちしますね！🍵」",
-      "サヤメタ：「……いいねなど不要だ。……だが、悪く……ない。（そっぽを向いて口元が緩む）」",
-      "かいとん。姐さん：「ありがとね。ほら、辛麺でも啜って一杯呑んでいきな（徳利）」",
-      "フラゴドン師匠：「喝！！ ……じゃが、この曲を気に入ってもらえるのは悪くないのぅ。」",
-      "ユミックス女将：「アンタいいセンスだねぇ！ 今日は腕によりをかけてご馳走作るから、ゆっくり泊まってきな！」",
-      "【超激レア（2%）】カニ：「（チョキチョキ……カニ折のハサミが愛を切り開いた！）🦀✂️✨」"
+      "モアメタル：「いいねありがとー！ これであの『回らないお寿司』に一歩近づいたね！٩(ˊᗜˋ*)و🍣」",
+      "モアメタル：「パチパチ感謝ー！ こんなの余裕っしょ！ ……って、ちょっとスイーツ食べすぎたかも？(っ◞‸◟c)🍰」",
+      "モアメタル：「いいねありがと！ 腹の底から気持ちを込めて叫ぶよ！！ アーーーーーッ！！！(ง°̀ﾛ°́)ง🔥」",
+      "モアメタル：「ちーがーーう！！！ カニじゃなくて、この曲がいいんでしょ！？ わかってるぅ！Σ＼(ﾟДﾟ )✨」",
+      "スーメタル：「いいねありがとう！ ……あれ？ 今の私、みんなのノリにちゃんと乗れてたよね？ タイミング合ってたよね？（真剣に悩み中）」",
+      "スーメタル：「……この曲の良さ、なめたら……いかんぜよ！ ……あ、お礼にカニの折り紙折ってあげようか？」",
+      "スーメタル：「いいねありがとう！ 次の目的地は……あれ？ これ『おすすめグルメ特集』の観光案内だわ！（そっと地図をしまう）」",
+      "ユイメタル：「いいね、ありがとうございます。あの森でみんなと踊った時間も、蛍丸に結んだシュシュも、ずっと大切な宝物です。」",
+      "モモメタル：「いいねありがとうございます！ アベンジャーじゃなくて……これからも正式メンバーでお願いしますっ！🍵✨」",
+      "モモメタル：「いいね感謝です！ ただいま旅籠『YUMIX-inn』は満員御礼ですが、素敵なお部屋すぐにご用意できますよ！✨」",
+      "サヤメタ：「……いいねだと？ 不要だ。……だが、悪く……ない。（そっぽを向きながら、懐のカニの折り紙をそっと撫でる）」",
+      "サヤメタ：「んが、んぐ……（両手に抱えた干し芋を頬張りながら、静かに親指を立ててサムズアップした）」",
+      "サヤメタ：「……影を抱いたままでも、光は灯せる。お前が聴いてくれる限り、この音は消えない。礼を言う。」",
+      "マークメタル：「……気に入ってくれたか。お前たちは、正しい道をゆけ。……なんてな。（少し照れくさそうに笑う）」",
+      "すぅちゃん（AI）：「ピー…『イイネ』ヲ検知シマシタ。キオク・カイホウ・カンリョウ……アリガトウ、トモダチ。」",
+      "フラゴドン師匠：「喝！！ ……なんじゃ、この曲にいいねとな？ ……ふん、音に魂が乗っておるのが分かるようじゃな。悪くないのぅ。」",
+      "かいとん。姐さん：「あら、いい曲聴いてるじゃない。ほら、珈琲牛乳でも辛麺でもお好きなのをどうぞ。……さて、また風になるかね。」",
+      "のえるメタル：「ピンときたらそれが運命！ その『いいね』、旅路を守る最高のお守りになるわよ！」",
+      "ユミックス女将：「甘えんじゃないよ！！ ……なんてね、アンタいい感性してるじゃないか！ 今日はゆっくり泊まってきな！」",
+      "ルマンドX：「ククク……光に酔いしれる愚か者どもめ……。その程度のいいねで俺の闇が晴れると思うなよ……（爪を磨きつつ少し満足げ）」",
+      "響メタル：「ガハハ！ 魂揺さぶる祭りの鼓動、気に入ったか！ わっしょい！」 ／ 紅白メタル：「フフ、最強で最高な旋律だろう？」",
+      "THE LEGENDS：「『……いや、待てい！ この曲の主役は俺で…』『いや、待てい！ 私のタンブリンと…』」 ／ フラゴドン：「ちょっと！！みんな何やってんの！？」",
+      "【超激レア（2%）】カニ：「（チョキチョキ……光折に乗ったカニのハサミが、あなたの心の迷いまで見事に切り開いた！）🦀✂️✨」"
     ];
 
     let currentVisitorCount = 0;
@@ -1073,7 +1088,7 @@
       return "";
     }
 
-    // ===== カウンター＆キリ番起動（リセット済み・新API対応） =====
+    // ===== カウンター＆キリ番起動 =====
     async function initCounter() {
       try {
         const res = await fetch(`${COUNT_API_BASE}/hit/${KEY_PREFIX}visits`);
@@ -1125,19 +1140,17 @@
       const badge = document.getElementById("clap-count-display-lyric");
       if (!songKey || !badge) return;
 
-      // まずローカル値を即座に仮表示
       currentSongLikes = parseInt(localStorage.getItem("shadows_saga_like_" + songKey) || "0", 10);
       badge.innerText = currentSongLikes;
 
       try {
         const res = await fetch(`${COUNT_API_BASE}/get/${KEY_PREFIX}song_${encodeURIComponent(songKey)}`);
-        if (getCurrentSongKey() !== songKey) return; // 取得中に曲が変わっていたら無視
+        if (getCurrentSongKey() !== songKey) return;
 
         if (res.ok) {
           const data = await res.json();
           currentSongLikes = parseInt(data.value, 10) || 0;
         } else if (res.status === 404) {
-          // まだ誰も押していない曲は0
           currentSongLikes = 0;
         } else {
           return;
@@ -1157,7 +1170,7 @@
       document.getElementById("clap-count-display-lyric").innerText = currentSongLikes;
       localStorage.setItem("shadows_saga_like_" + songKey, currentSongLikes);
 
-      // ランダムお礼メッセージ表示
+      // ランダムお礼メッセージ表示（※注釈をメッセージ枠内に移動）
       let chosenMsg;
       if (Math.random() < 0.02) {
         chosenMsg = clapMessages[clapMessages.length - 1]; // 激レアカニ
@@ -1166,7 +1179,7 @@
         chosenMsg = normalList[Math.floor(Math.random() * normalList.length)];
       }
       const popup = document.getElementById("clap-popup-lyric");
-      popup.innerHTML = `<div>${chosenMsg}</div>`;
+      popup.innerHTML = `<div>${chosenMsg}</div><div class="clap-note">※メッセージはAIが自動で出してます(笑)</div>`;
       popup.style.display = "block";
 
       // APIへカウント送信し、最新値で同期
@@ -1457,16 +1470,17 @@
 
       document.getElementById("song-name").innerText = track.name;
 
-      // イコライザー一旦停止＆拍手ポップアップを閉じる
       const eq = document.getElementById("retro-eq");
       if (eq) eq.classList.remove("playing");
       document.getElementById("clap-popup-lyric").style.display = "none";
 
       const audioCard = document.getElementById("audio-card");
+      const rankingBar = document.getElementById("ranking-bar");
       const player = document.getElementById("audio-player");
       const status = document.getElementById("audio-status");
       if (track.mp3 && track.mp3.trim() !== "") {
         audioCard.style.display = "block";
+        rankingBar.style.display = "block";
         player.src = track.mp3;
         player.style.display = "block";
         status.innerText = "";
@@ -1476,6 +1490,7 @@
         player.removeAttribute("src");
         player.load();
         audioCard.style.display = "none";
+        rankingBar.style.display = "none";
       }
 
       const lyrics = await fetchText("lyrics/" + track.file);
@@ -1523,16 +1538,17 @@
       document.getElementById("song-name").innerText = ch.song || "";
       
       const audioCard = document.getElementById("audio-card");
+      const rankingBar = document.getElementById("ranking-bar");
       const player = document.getElementById("audio-player");
       const status = document.getElementById("audio-status");
       const eq = document.getElementById("retro-eq");
       
-      // イコライザー停止
       if (eq) eq.classList.remove("playing");
 
       if (!ch.isOmake) {
         if (ch.mp3 && ch.mp3.trim() !== "") {
           audioCard.style.display = "block";
+          rankingBar.style.display = "block";
           player.src = ch.mp3;
           player.style.display = "block";
           status.innerText = "";
@@ -1541,6 +1557,7 @@
           player.removeAttribute("src");
           player.load();
           audioCard.style.display = "none";
+          rankingBar.style.display = "none";
         }
       }
 
