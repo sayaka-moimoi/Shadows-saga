@@ -63,6 +63,10 @@
       margin: 0 auto;
       padding: 20px 16px 100px;
     }
+    /* 歌詞ページ表示時は2段固定フッターの分だけ下余白を広く確保 */
+    body.lyric-mode main {
+      padding-bottom: 165px;
+    }
     .chapter-header {
       text-align: center;
       margin-bottom: 25px;
@@ -271,23 +275,35 @@
       transform: translateY(-1px);
     }
 
-    /* ===== 【改修】曲別「いいね！」エリア（タブと歌詞枠の間） ===== */
-    .clap-container {
-      margin-bottom: 18px;
-      padding: 12px 16px;
-      background: #111116;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      text-align: center;
+    /* ===== 【再改修】下固定2段フッター（いいねバー＋前の曲/次の曲） ===== */
+    .bottom-fixed-wrap {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 90;
+      background: rgba(13, 13, 17, 0.96);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid var(--border-color);
+    }
+    .clap-fixed-bar {
+      padding: 8px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       font-family: sans-serif;
+      text-align: center;
+    }
+    .clap-btn-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     .btn-clap {
       background: #20202e;
       border: 1px solid var(--accent-gold);
       color: var(--accent-gold);
-      padding: 9px 22px;
+      padding: 7px 22px;
       border-radius: 30px;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
       font-weight: bold;
       cursor: pointer;
       display: inline-flex;
@@ -304,27 +320,60 @@
       background: var(--accent-red);
       color: #fff;
       font-size: 0.75rem;
-      padding: 2px 8px;
+      padding: 1px 8px;
       border-radius: 10px;
+    }
+    .clap-response-card {
+      max-width: 720px;
+      margin: 0 auto 10px;
+      padding: 12px 14px;
+      background: #1a1a26;
+      border: 1px dashed var(--accent-gold);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      color: #fff;
+      display: none;
+      animation: popIn 0.2s ease;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.7);
+    }
+    .clap-popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+    }
+    .clap-popup-title {
+      font-size: 0.75rem;
+      color: var(--accent-gold);
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .clap-close-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-color);
+      color: #ccc;
+      width: 24px;
+      height: 24px;
+      line-height: 22px;
+      text-align: center;
+      border-radius: 50%;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+    .clap-close-btn:hover {
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
     }
     .clap-note {
       font-size: 0.72rem;
       color: #888;
-      margin-top: 8px;
+      margin-top: 6px;
       text-align: right;
-    }
-    .clap-response-card {
-      margin-top: 12px;
-      padding: 14px 16px;
-      background: #1a1a26;
-      border: 1px dashed var(--accent-gold);
-      border-radius: 6px;
-      font-size: 0.88rem;
-      line-height: 1.75;
-      color: #fff;
-      display: none;
-      animation: popIn 0.25s ease;
-      text-align: left;
     }
 
     /* キリ番 ＆ ランキング共通モーダルオーバーレイ */
@@ -353,7 +402,7 @@
       font-family: sans-serif;
     }
     @keyframes popIn {
-      from { transform: scale(0.8); opacity: 0; }
+      from { transform: scale(0.92); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
     .kiriban-row-1 {
@@ -542,7 +591,7 @@
       gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
     .omake-btn {
       background: #1e1e28;
@@ -661,17 +710,9 @@
     .overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); display: none; z-index: 150; }
     .overlay.open { display: block; }
     .footer-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background: rgba(13, 13, 17, 0.95);
-      border-top: 1px solid var(--border-color);
       display: flex;
       justify-content: space-around;
       padding: 10px 20px;
-      backdrop-filter: blur(8px);
-      z-index: 90;
     }
     .nav-btn {
       background: var(--panel-bg);
@@ -772,7 +813,7 @@
       <audio id="audio-player" controls preload="metadata" src=""></audio>
     </div>
 
-    <!-- 【改修】曲バナーの直下に配置した全曲ランキングボタン -->
+    <!-- 曲バナーの直下に配置した全曲ランキングボタン -->
     <div class="ranking-bar" id="ranking-bar">
       <button class="btn-ranking-open" onclick="openRankingModal()">🏆 全曲いいねランキングを見る</button>
     </div>
@@ -803,15 +844,6 @@
     <!-- 歌詞エリア -->
     <div class="view-content" id="content-lyric">
       <div class="omake-selector" id="omake-selector" style="display: none;"></div>
-
-      <!-- 【改修】切り替えボタンと歌詞枠の間に配置した曲別いいね！ -->
-      <div class="clap-container">
-        <button class="btn-clap" onclick="sendSongLike()">
-          👏🏻✨ この曲いいね！ <span class="clap-badge" id="clap-count-display-lyric">0</span>
-        </button>
-        <div class="clap-response-card" id="clap-popup-lyric"></div>
-      </div>
-
       <div class="lyrics-body" id="lyrics-text"></div>
 
       <div class="link-list-card" id="tracklist-container">
@@ -821,9 +853,22 @@
     </div>
   </main>
 
-  <div class="footer-nav">
-    <button class="nav-btn" id="prev-btn" onclick="prevChapter()">← 前の章</button>
-    <button class="nav-btn" id="next-btn" onclick="nextChapter()">次の章 →</button>
+  <!-- 【再改修】下固定2段フッター -->
+  <div class="bottom-fixed-wrap">
+    <!-- 歌詞タブ表示時のみ「前の曲/次の曲」の直上に固定表示されるいいねバー -->
+    <div class="clap-fixed-bar" id="clap-fixed-bar" style="display: none;">
+      <div class="clap-response-card" id="clap-popup-lyric" onclick="closeClapPopup()"></div>
+      <div class="clap-btn-row">
+        <button class="btn-clap" onclick="sendSongLike()">
+          👏🏻✨ この曲いいね！ <span class="clap-badge" id="clap-count-display-lyric">0</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="footer-nav">
+      <button class="nav-btn" id="prev-btn" onclick="prevChapter()">← 前の章</button>
+      <button class="nav-btn" id="next-btn" onclick="nextChapter()">次の章 →</button>
+    </div>
   </div>
 
   <script>
@@ -936,6 +981,7 @@
     let currentIndex = 0;
     let currentOmakeIndex = 0;
     let currentView = 'book';
+    let currentHasLyric = false;
 
     const fontSizes = ["0.8rem", "1.0rem", "1.2rem"];
     const fontSizeLabels = ["小", "中", "大"];
@@ -1162,6 +1208,11 @@
       }
     }
 
+    function closeClapPopup() {
+      const popup = document.getElementById("clap-popup-lyric");
+      if (popup) popup.style.display = "none";
+    }
+
     async function sendSongLike() {
       const songKey = getCurrentSongKey();
       if (!songKey) return;
@@ -1170,7 +1221,7 @@
       document.getElementById("clap-count-display-lyric").innerText = currentSongLikes;
       localStorage.setItem("shadows_saga_like_" + songKey, currentSongLikes);
 
-      // ランダムお礼メッセージ表示（※注釈をメッセージ枠内に移動）
+      // ランダムお礼メッセージ表示（✕ボタン＆枠タップで閉じる＋注釈内蔵）
       let chosenMsg;
       if (Math.random() < 0.02) {
         chosenMsg = clapMessages[clapMessages.length - 1]; // 激レアカニ
@@ -1179,7 +1230,14 @@
         chosenMsg = normalList[Math.floor(Math.random() * normalList.length)];
       }
       const popup = document.getElementById("clap-popup-lyric");
-      popup.innerHTML = `<div>${chosenMsg}</div><div class="clap-note">※メッセージはAIが自動で出してます(笑)</div>`;
+      popup.innerHTML = `
+        <div class="clap-popup-header">
+          <span class="clap-popup-title">💬 キャラクターメッセージ（タップで閉じる）</span>
+          <button class="clap-close-btn" onclick="event.stopPropagation(); closeClapPopup();" aria-label="閉じる">✕</button>
+        </div>
+        <div>${chosenMsg}</div>
+        <div class="clap-note">※メッセージはAIが自動で出してます(笑)</div>
+      `;
       popup.style.display = "block";
 
       // APIへカウント送信し、最新値で同期
@@ -1472,7 +1530,7 @@
 
       const eq = document.getElementById("retro-eq");
       if (eq) eq.classList.remove("playing");
-      document.getElementById("clap-popup-lyric").style.display = "none";
+      closeClapPopup();
 
       const audioCard = document.getElementById("audio-card");
       const rankingBar = document.getElementById("ranking-bar");
@@ -1566,14 +1624,14 @@
       const rawNovel = await fetchText("novel/" + ch.novelFile);
       document.getElementById("novel-text").innerHTML = parseCustomMarkup(rawNovel, "align-left");
 
-      // 歌詞側の拍手メッセージ枠を初期化（非表示）
-      document.getElementById("clap-popup-lyric").style.display = "none";
+      // 歌詞側の拍手メッセージ枠を閉じる
+      closeClapPopup();
 
       // 歌詞読み込み
       const viewTabs = document.getElementById("view-tabs");
-      const hasLyric = Boolean(ch.isOmake || (ch.lyricFile && ch.lyricFile.trim() !== ""));
+      currentHasLyric = Boolean(ch.isOmake || (ch.lyricFile && ch.lyricFile.trim() !== ""));
 
-      if (hasLyric) {
+      if (currentHasLyric) {
         viewTabs.style.display = "flex";
         if (ch.isOmake) {
           renderOmakeSelector(ch);
@@ -1616,6 +1674,15 @@
       document.getElementById("tab-lyric").classList.toggle("active", type === 'lyric');
       document.getElementById("content-book").classList.toggle("active", type === 'book');
       document.getElementById("content-lyric").classList.toggle("active", type === 'lyric');
+
+      // 歌詞ページ表示時のみ下固定「この曲いいね！」バーを表示
+      const clapBar = document.getElementById("clap-fixed-bar");
+      const showFixedLike = (type === 'lyric' && currentHasLyric);
+      if (clapBar) {
+        clapBar.style.display = showFixedLike ? "block" : "none";
+      }
+      document.body.classList.toggle("lyric-mode", showFixedLike);
+
       updateFooterNavLabels();
     }
 
